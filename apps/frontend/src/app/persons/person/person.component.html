@@ -1,0 +1,43 @@
+<mat-card>
+    <mat-card-header>
+        <img mat-card-avatar class="example-header-image" src="/api/person/{{person.id}}/{{person.files[0]}}">
+        <mat-card-title>{{ person.name }}</mat-card-title>
+        <mat-card-subtitle>&nbsp;</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <mat-expansion-panel>
+            <fre-face *ngFor="let f of person.files" class="face" [person_id]="person.id" [face]="f">
+            </fre-face>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+        <fre-face *ngFor="let f of person.files" class="face" [person_id]="person.id" [face]="f">
+        </fre-face>
+        </mat-expansion-panel>
+        <mat-accordion class="person_faces">
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <span matBadge="{{person.files.length}}" matBadgeSize="small" matBadgeOverlap="true">Validated</span>
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    <mat-icon>account_circle</mat-icon>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <fre-face *ngFor="let f of person.files" class="face" [person_id]="person.id" [face]="f">
+               </fre-face>
+              </mat-expansion-panel>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    To be validated
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    <mat-icon>help</mat-icon>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <fre-face *ngFor="let f of person.files" class="face" [person_id]="person.id" [face]="f">
+               </fre-face>
+              </mat-expansion-panel>
+            </mat-accordion>
+      </mat-card-content>
+</mat-card>

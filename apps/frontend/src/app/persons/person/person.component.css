@@ -1,0 +1,9 @@
+/* .person_faces .mat-expansion-panel-header-title,
+.person_faces .mat-expansion-panel-header-description {
+  flex-basis: 0;
+} */
+
+.person_faces .mat-expansion-panel-header-description {
+  justify-content: flex-end;
+}
+
