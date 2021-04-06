@@ -1,16 +1,13 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { urlencoded } from 'express';
-import { readdir, statSync } from 'fs';
-import { readSync } from 'node:fs';
+import { readdir } from 'fs';
 import { join, resolve } from 'path';
-import { Person } from '@face-recognition-editor/data'
+import { Person } from '@face-recognition-editor/data';
 
-let TRAIN_DIR = '../face_recognition/train_dir';
+const TRAIN_DIR = '../face_recognition/train_dir';
 
 @Injectable()
 export class PersonService {
-
   private readonly logger = new Logger(PersonService.name);
 
   create(createPersonDto: Person) {
@@ -28,9 +25,12 @@ export class PersonService {
             .filter((d) => {
               return d.isDirectory();
             })
+            .filter((v, i) => {
+              return i<10
+            })
             .map((d) => {
               return new Person(d.name);
-            }),
+            })
         );
       });
     });
@@ -38,22 +38,50 @@ export class PersonService {
 
   async findOne(name: string): Promise<Person> {
     return new Promise<Person>((resolve, reject) => {
-      readdir(join(TRAIN_DIR, name), (err, files) => {
+      readdir(join(TRAIN_DIR, name), { withFileTypes: true }, (err, files) => {
         if (err) {
           return reject(err);
         }
-        let person = new Person(name);
+        const person = new Person(name);
         this.logger.log(name);
 
-        person.files = files.map(f => { return encodeURIComponent(f) });
+        person.validated = files
+          .filter((f) => {
+            return f.isFile();
+          })
+          .map((f) => {
+            return encodeURIComponent(f.name);
+          });
 
-        resolve(person);
+        readdir(
+          join(TRAIN_DIR, name, 'tovalidate'),
+          { withFileTypes: true },
+          (err, files) => {
+            if (files) {
+              person.toValidate = files
+                .filter((f) => {
+                  return f.isFile();
+                })
+                .map((f) => {
+                  return encodeURIComponent(f.name);
+                });
+            }
+            resolve(person);
+          }
+        );
       });
     });
   }
 
-  findOneImagePath(name: string, face: string) {
-    return resolve(join(TRAIN_DIR, name, face));
+  findOneImagePath(name: string, type: string, face: string) {
+    this.logger.log(name);
+    this.logger.log(type);
+    this.logger.log(face);
+    if (type === 'validated') {
+      return resolve(join(TRAIN_DIR, name, face));
+    } else {
+      return resolve(join(TRAIN_DIR, name, 'tovalidate', face));
+    }
   }
 
   update(id: number, updatePersonDto: Person) {

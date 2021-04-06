@@ -1,7 +1,8 @@
 export class Person {
   id: string;
   name: string;
-  files = [];
+  validated = [];
+  toValidate = [];
 
   constructor(name: string) {
     this.name = name;

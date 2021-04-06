@@ -7,3 +7,6 @@
   justify-content: flex-end;
 }
 
+mat-card-title mat-form-field {
+  margin-top: -2em;
+}

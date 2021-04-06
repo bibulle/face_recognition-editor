@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Person } from '@face-recognition-editor/data';
 
 @Component({
-  selector: 'fre-persons',
+  selector: 'face-recognition-editor-persons',
   templateUrl: './persons.component.html',
   styleUrls: ['./persons.component.less'],
 })

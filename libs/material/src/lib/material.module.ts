@@ -13,6 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatBadgeModule } from '@angular/material/badge';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -29,7 +30,8 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatTableModule,
     MatSelectModule,
     MatExpansionModule,
-    MatBadgeModule
+    MatBadgeModule,
+    FormsModule
   ],
   exports: [
     FlexLayoutModule,
@@ -45,7 +47,8 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatTableModule,
     MatSelectModule,
     MatExpansionModule,
-    MatBadgeModule
+    MatBadgeModule,
+    FormsModule
   ]
 })
 export class MaterialModule {}

@@ -21,9 +21,9 @@ export class PersonController {
   findOne(@Param('name') name: string) {
     return this.personService.findOne(name);
   }
-  @Get(':name/:face')
-  findOneImage(@Param('name') name: string, @Param('face') face: string, @Res() res) {
-    const path = this.personService.findOneImagePath(name, face); 
+  @Get(':name/:type/:face')
+  findOneImage(@Param('name') name: string, @Param('type') type: string, @Param('face') face: string, @Res() res) {
+    const path = this.personService.findOneImagePath(name, type, face); 
     return res.sendFile(path);
   }
 
