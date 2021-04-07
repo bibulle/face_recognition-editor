@@ -1,14 +1,31 @@
 <mat-card>
   <mat-card-header>
     <img
+      *ngIf="person.validated.length > 0"
       mat-card-avatar
-      class="example-header-image"
-      src="/api/person/{{ person.id }}/validated/{{ person.validated[0] }}"
+      class="header-image"
+      src="{{ getPersonThumbnailUrl() }}"
+    />
+    <img
+      *ngIf="person.validated.length <= 0"
+      mat-card-avatar
+      class="header-image"
+      src="/assets/unknownFace1.png"
     />
     <mat-card-title>
-      <span *ngIf="!editing_name" (click)="editing_name = true">{{ person.name }}</span>
-      <mat-form-field *ngIf="editing_name" appearance="standard" disabled="true" floatLabel="never" (focusout)="editing_name = false">
-        <input matInput [(ngModel)]="person.name"> 
+      <span *ngIf="!editing_name" (click)="nameClick()">{{
+        person.name
+      }}</span>
+      <mat-form-field
+        *ngIf="editing_name"
+        appearance="standard"
+        disabled="true"
+        floatLabel="never"
+        (focusout)="nameFocusOut()"
+        (focusin)="nameFocusIn()"
+      >
+        <input matInput [(ngModel)]="person.name" 
+        (ngModelChange)="nameChanged()"/>
       </mat-form-field>
     </mat-card-title>
     <mat-card-subtitle>&nbsp;</mat-card-subtitle>
@@ -34,7 +51,7 @@
           class="face"
           [person_id]="person.id"
           [face]="f"
-          [validated]=true
+          [validated]="true"
         >
         </face-recognition-editor-face>
       </mat-expansion-panel>
@@ -57,7 +74,7 @@
           class="face"
           [person_id]="person.id"
           [face]="f"
-          [validated]=false
+          [validated]="false"
         >
         </face-recognition-editor-face>
       </mat-expansion-panel>

@@ -3,10 +3,26 @@
   flex-basis: 0;
 } */
 
+
+.header-image {
+  background: lightgray;
+}
+
+.mat-card-header {
+  height: 3.5em;
+}
+mat-card-title mat-form-field {
+  margin-top: -2em;
+}
+
 .person_faces .mat-expansion-panel-header-description {
   justify-content: flex-end;
 }
 
-mat-card-title mat-form-field {
-  margin-top: -2em;
+.mat-expansion-panel-spacing {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+.mat-expansion-panel-header.mat-expanded {
+  height: 45px;
 }

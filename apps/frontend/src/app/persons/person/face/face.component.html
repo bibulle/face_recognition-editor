@@ -1,1 +1,8 @@
-<img class="face" src="/api/person/{{person_id}}/{{validated ? 'validated' : 'notvalidated'}}/{{face}}">
+<div class="face" (click)="faceClick()">
+  <img
+    src="{{ getFaceUrl() }}"
+  />
+  <div class="do-not-exist" *ngIf="!face.sourceUrl">
+    <mat-icon color="accent">close</mat-icon>
+  </div>
+</div>

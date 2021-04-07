@@ -1,3 +1,91 @@
-.face {
-    height: 4em;
+:host {
+    position: relative;
 }
+
+.face {
+    display: inline-flex;
+    vertical-align: middle;
+
+    height: 4em;
+    width: 4em;
+    padding-bottom: 1em;
+    padding-top: 1em;
+    transition:width 0.5s ease, height 0.5s ease, padding 0.5s ease;
+}
+
+.face:hover {
+    height: 6em;
+    width: 6em;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.face img {
+    width: 100%;
+    height: 100%;
+}
+
+.face .do-not-exist {
+    position: absolute;
+    height: 4em;
+    width: 4em;
+    transition:width 0.5s ease, height 0.5s ease;
+}
+.face:hover .do-not-exist {
+    height: 6em;
+    width: 6em;
+}
+.face .do-not-exist mat-icon {
+    opacity: 0.5;
+    font-size: 4em;
+    transition:font-size 0.5s ease;
+}
+
+.face:hover .do-not-exist mat-icon {
+    font-size: 6em;
+}
+
+.image-origin {
+    position: relative;
+    margin-right: 0;
+    padding-right: 0;
+}
+.image-origin .cadre {
+    margin-left: 24px;
+    /* background-color: red; */
+    border-width: 2px;
+    border-color: red;
+    border-style: solid;
+    opacity: 0.5;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+}
+
+.close-button {
+    /* position: absolute;
+    top:0;
+    right:0; */
+    float: right;
+    top:-24px;
+    right:-24px;
+  
+  }
+  
+  .close-icon {
+    transition: 1s ease-in-out;
+  }
+  
+  .close-icon:hover {
+    transform: rotate(180deg);
+  }
+  
+  ::ng-deep .icon-outside .close-button{
+    float: right;
+    top:-52px;
+    right:-52px;
+  }
+  
+  ::ng-deep .icon-outside .mat-dialog-container {
+   overflow: unset
+  }
