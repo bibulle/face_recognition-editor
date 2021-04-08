@@ -7,8 +7,8 @@ import * as gm from "gm";
 
 const im = gm.subClass({ imageMagick: true });
 
-const TRAIN_DIR = '../face_recognition/train_dir';
-const TEST_DIR = '/Users/m341772/Documents/Numérisation';
+const TRAIN_DIR = '/train_dir';
+const TEST_DIR = '/test_dir';
 
 @Injectable()
 export class PersonService {
