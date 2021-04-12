@@ -47,7 +47,7 @@ export class PersonComponent implements OnInit, OnDestroy {
   }
 
   getPersonThumbnailUrl() {
-    return this._personService.getFaceUrl(this.person.id, true, this.person.validated[0].url);
+    return this._personService.getFaceUrl(this.person.id, true, this.person.getValidated()[0].url);
   }
 
   ngOnDestroy() {

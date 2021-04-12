@@ -28,7 +28,11 @@ export class PersonsComponent implements OnInit {
 
   fetch() {
     this.http.get<Person[]>('/api/person').subscribe((t) => {
-      this.persons = t
+      this.persons = t.map(p => {
+        const p1 = new Person(p.name);
+        p1.fill(p);
+        return p1;
+      })
       console.log(this.persons);
     });
   }

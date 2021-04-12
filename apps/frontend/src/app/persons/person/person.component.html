@@ -1,13 +1,13 @@
 <mat-card>
   <mat-card-header>
     <img
-      *ngIf="person.validated.length > 0"
+      *ngIf="person.getValidated().length > 0"
       mat-card-avatar
       class="header-image"
       src="{{ getPersonThumbnailUrl() }}"
     />
     <img
-      *ngIf="person.validated.length <= 0"
+      *ngIf="person.getValidated().length <= 0"
       mat-card-avatar
       class="header-image"
       src="/assets/unknownFace1.png"
@@ -35,8 +35,11 @@
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <span
-              matBadge="{{ person.validated.length }}"
+            <span *ngIf="person.summary"
+              >Loading ...</span
+            >
+            <span *ngIf="!person.summary"
+              matBadge="{{ person.getValidated().length }}"
               matBadgeSize="small"
               matBadgeOverlap="true"
               >Validated</span
@@ -47,7 +50,7 @@
           </mat-panel-description>
         </mat-expansion-panel-header>
         <face-recognition-editor-face
-          *ngFor="let f of person.validated"
+          *ngFor="let f of person.getValidated()"
           class="face"
           [person_id]="person.id"
           [face]="f"
@@ -55,11 +58,11 @@
         >
         </face-recognition-editor-face>
       </mat-expansion-panel>
-      <mat-expansion-panel *ngIf="person.toValidate.length > 0">
+      <mat-expansion-panel *ngIf="person.getToValidate().length > 0">
         <mat-expansion-panel-header>
           <mat-panel-title>
             <span
-              matBadge="{{ person.toValidate.length }}"
+              matBadge="{{ person.getToValidate().length }}"
               matBadgeSize="small"
               matBadgeOverlap="true"
               >To be validated</span
@@ -70,7 +73,7 @@
           </mat-panel-description>
         </mat-expansion-panel-header>
         <face-recognition-editor-face
-          *ngFor="let f of person.toValidate"
+          *ngFor="let f of person.getToValidate()"
           class="face"
           [person_id]="person.id"
           [face]="f"

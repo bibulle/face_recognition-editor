@@ -12,11 +12,7 @@ export class PersonService {
   
   fetch(person: Person) {
       this.http.get<Person>(`/api/person/${person.id}`).subscribe((p) => {
-        person.id = p.id;
-        person.name = p.name;
-        person.toValidate = p.toValidate;
-        person.validated = p.validated;
-        //console.log(this.person);
+        person.fill(p);
       });
   }
 
@@ -24,8 +20,8 @@ export class PersonService {
     this.http.put<Person>(`/api/person/${person.id}/rename`, {"name": name}).subscribe((p) => {
       person.id = p.id;
       person.name = p.name;
-      person.toValidate = p.toValidate;
-      person.validated = p.validated;
+      person.setToValidate(p.getToValidate());
+      person.setValidated(p.getValidated());
       //console.log(this.person);
     });
   }

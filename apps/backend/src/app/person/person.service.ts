@@ -7,8 +7,8 @@ import * as gm from "gm";
 
 const im = gm.subClass({ imageMagick: true });
 
-const TRAIN_DIR = '/train_dir';
-const TEST_DIR = '/test_dir';
+const TRAIN_DIR = process.env.TRAIN_DIR || '/train_dir';
+const TEST_DIR = process.env.TEST_DIR || '/test_dir';
 
 @Injectable()
 export class PersonService {
@@ -68,8 +68,8 @@ export class PersonService {
                 });
             }
 
-            person.validated = await Promise.all(validated);
-            person.toValidate = await Promise.all(toValidate);
+            person.setValidated(await Promise.all(validated));
+            person.setToValidate( await Promise.all(toValidate));
 
             resolve(person);
           }
@@ -227,4 +227,11 @@ export class PersonService {
   remove(id: number) {
     return `This action removes a #${id} person`;
   }
+
+  // sleep(ms) {
+  //   return new Promise((resolve) => {
+  //     setTimeout(resolve, ms);
+  //   });
+  // }   
+
 }
