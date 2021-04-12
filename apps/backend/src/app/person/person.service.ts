@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { readdir, stat, rename, statSync, accessSync } from 'fs';
+import { readdir, stat, rename, statSync, accessSync, unlink } from 'fs';
 import { join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
-import * as gm from "gm";
+import * as gm from 'gm';
 
 const im = gm.subClass({ imageMagick: true });
 
@@ -38,144 +38,143 @@ export class PersonService {
 
   async findOne(name: string): Promise<Person> {
     return new Promise<Person>((resolve, reject) => {
-      readdir(join(TRAIN_DIR, name), { withFileTypes: true }, async (err, files) => {
-        if (err) {
-          return reject(err);
-        }
-        const person = new Person(name);
-        this.logger.log(name);
+      readdir(
+        join(TRAIN_DIR, name),
+        { withFileTypes: true },
+        async (err, files) => {
+          if (err) {
+            return reject(err);
+          }
+          const person = new Person(name);
+          this.logger.log(name);
 
-        let validated = files
-          .filter((f) => {
-            return f.isFile() && !f.name.startsWith('.');
-          })
-          .map((f) => {
-            return this.findOneFaceOrigin(f.name);
-          });
+          let validated = files
+            .filter((f) => {
+              return f.isFile() && !f.name.startsWith('.');
+            })
+            .map((f) => {
+              return this.findOneFaceOrigin(f.name);
+            });
 
           let toValidate = [];
           readdir(
-          join(TRAIN_DIR, name, 'tovalidate'),
-          { withFileTypes: true },
-          async (err, files) => {
-            if (files) {
-              toValidate = files
-                .filter((f) => {
-                  return f.isFile();
-                })
-                .map((f) => {
-                  return this.findOneFaceOrigin(f.name);
-                });
+            join(TRAIN_DIR, name, 'tovalidate'),
+            { withFileTypes: true },
+            async (err, files) => {
+              if (files) {
+                toValidate = files
+                  .filter((f) => {
+                    return f.isFile();
+                  })
+                  .map((f) => {
+                    return this.findOneFaceOrigin(f.name);
+                  });
+              }
+
+              person.setValidated(await Promise.all(validated));
+              person.setToValidate(await Promise.all(toValidate));
+
+              resolve(person);
             }
-
-            person.setValidated(await Promise.all(validated));
-            person.setToValidate( await Promise.all(toValidate));
-
-            resolve(person);
-          }
-        );
-      });
+          );
+        }
+      );
     });
   }
 
-  findOneFaceFullPath(name: string, type: string, face: string) {
+  findOneFaceFullPath(name: string, type: string, face: string): string {
     if (type === 'validated') {
       return resolve(join(TRAIN_DIR, name, face));
     } else {
       return resolve(join(TRAIN_DIR, name, 'tovalidate', face));
     }
   }
-  findOneFaceSrcFullPath(path: string) {
+  findOneFaceSrcFullPath(path: string): string {
     return join(TEST_DIR, path);
   }
 
   async findOneFaceOrigin(face: string): Promise<Face> {
-    return new Promise<Face> ( (resolve, reject) => {
+    return new Promise<Face>((resolve, reject) => {
+      //this.logger.log(`findOneFaceOrigin(${face})`);
+      const ret = new Face(face);
 
-    //this.logger.log(`findOneFaceOrigin(${face})`);
-    const ret = new Face(face);
+      const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
 
-    const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
+      if (!faceParser.test(face)) {
+        this.logger.error(`face not correct !!! (${face})`);
+        reject();
+      } else {
+        //console.log(faceParser.exec(face));
+        const parts = faceParser.exec(face);
+        const names = parts[1].split('_');
+        const fileType = parts[2];
+        const left = +parts[3];
+        const top = +parts[4];
+        const right = +parts[5];
+        const bottom = +parts[6];
 
-    if (!faceParser.test(face)) {
-      this.logger.error(`face not correct !!! (${face})`);
-      reject();
-    } else {
-      //console.log(faceParser.exec(face));
-      const parts = faceParser.exec(face);
-      const names = parts[1].split('_');
-      const fileType = parts[2];
-      const left = +parts[3];
-      const top = +parts[4];
-      const right = +parts[5];
-      const bottom = +parts[6];
+        // let's rebuild original path
+        let path = '.';
+        let startingIndex = 0;
+        let dirFound = true;
 
-      // let's rebuild original path
-      let path = '.';
-      let startingIndex = 0;
-      let dirFound = true;
-
-      // while dir are found try to find another one (recursivly)
-      while (dirFound) {
-        dirFound = false;
-        // Try to find the longer dir name
-        for (
-          let endIndex = names.length - 1;
-          endIndex > startingIndex;
-          endIndex--
-        ) {
-          // build the dir name
-          let dir_name = '';
-          for (let index = startingIndex; index < endIndex; index++) {
-            dir_name += (index == startingIndex ? '' : '_') + names[index];
-          }
-          // if dir exists, update path and go on
-          if (this.isFileExist(TEST_DIR, join(path, dir_name))) {
-            // this.logger.log(`      Exist: '${join(path, dir_name)}' `);
-            path = join(path, dir_name);
-            startingIndex = endIndex;
-            dirFound = true;
-            break;
+        // while dir are found try to find another one (recursivly)
+        while (dirFound) {
+          dirFound = false;
+          // Try to find the longer dir name
+          for (
+            let endIndex = names.length - 1;
+            endIndex > startingIndex;
+            endIndex--
+          ) {
+            // build the dir name
+            let dir_name = '';
+            for (let index = startingIndex; index < endIndex; index++) {
+              dir_name += (index == startingIndex ? '' : '_') + names[index];
+            }
+            // if dir exists, update path and go on
+            if (this.isFileExist(TEST_DIR, join(path, dir_name))) {
+              // this.logger.log(`      Exist: '${join(path, dir_name)}' `);
+              path = join(path, dir_name);
+              startingIndex = endIndex;
+              dirFound = true;
+              break;
+            }
           }
         }
-      }
-      //this.logger.log(`Dir Found '${path}'`);
-      // add the file to be searched
-      let file_name = '';
-      for (let index = startingIndex; index < names.length; index++) {
-        file_name += (index == startingIndex ? '' : '_') + names[index];
-      }
-      file_name += '.' + fileType;
-      //this.logger.log(`File '${join(path, file_name)}'`);
+        //this.logger.log(`Dir Found '${path}'`);
+        // add the file to be searched
+        let file_name = '';
+        for (let index = startingIndex; index < names.length; index++) {
+          file_name += (index == startingIndex ? '' : '_') + names[index];
+        }
+        file_name += '.' + fileType;
+        //this.logger.log(`File '${join(path, file_name)}'`);
 
-      if (this.isFileExist(TEST_DIR, join(path, file_name))) {
+        if (this.isFileExist(TEST_DIR, join(path, file_name))) {
+          //this.logger.log(`File found '${join(path, file_name)}'`);
+          ret.sourceUrl = encodeURIComponent(join(path, file_name));
+          ret.bottom = bottom;
+          ret.left = left;
+          ret.right = right;
+          ret.top = top;
 
-        //this.logger.log(`File found '${join(path, file_name)}'`);
-        ret.sourceUrl = encodeURIComponent(join(path, file_name));
-        ret.bottom = bottom;
-        ret.left = left;
-        ret.right = right;
-        ret.top = top;
+          im(join(TEST_DIR, path, file_name)).size((err, size) => {
+            if (err) {
+              return reject(err);
+            }
+            ret.width = size.width;
+            ret.height = size.height;
 
-        im(join(TEST_DIR,path, file_name))
-        .size((err, size) => {
-          if (err) {
-            return reject(err);
-          }
-          ret.width = size.width;
-          ret.height = size.height;
-           
+            resolve(ret);
+          });
+        } else {
+          this.logger.warn(`File not found '${join(path, file_name)}'`);
           resolve(ret);
-        })
-
-      } else {
-        this.logger.warn(`File not found '${join(path, file_name)}'`);
-        resolve(ret);
+        }
       }
-    }
-
-  });
-}
+    });
+  }
 
   isFileExist(root: string, path: string): boolean {
     let ret = false;
@@ -186,7 +185,7 @@ export class PersonService {
     return ret;
   }
 
-  async updateName(id: string, name: string) {
+  async updateName(id: string, name: string): Promise<Person> {
     return new Promise<Person>((resolve, reject) => {
       const fullPath = join(TRAIN_DIR, id);
       stat(fullPath, (err, stats) => {
@@ -220,6 +219,34 @@ export class PersonService {
     });
   }
 
+  async removeFace(name: string, type: string, face: string): Promise<Person> {
+    return new Promise<Person>((resolve, reject) => {
+      const path = this.findOneFaceFullPath(name, type, face);
+
+      stat(path, async (err, stats) => {
+        if (err && err.code === 'ENOENT') {
+          // file not found... do nothing
+          const ret = await this.findOne(name);
+          resolve(ret);
+    } else if (err) {
+          reject(err);
+        } else if (!stats.isFile()) {
+          this.logger.error(`This face is not a file !! '${path}'`);
+          reject(`This face is not a file !! '${path}'`);
+        } else {
+          this.logger.log(`removing '${path}'`);
+          unlink(path, async err => {
+            if (err) {
+              return reject(err);
+            }
+            const ret = await this.findOne(name);
+            resolve(ret);
+          })
+        }
+      });
+    });
+  }
+
   update(id: number, updatePersonDto: Person) {
     return `This action updates a #${id} person`;
   }
@@ -232,6 +259,5 @@ export class PersonService {
   //   return new Promise((resolve) => {
   //     setTimeout(resolve, ms);
   //   });
-  // }   
-
+  // }
 }

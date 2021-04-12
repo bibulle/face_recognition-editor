@@ -1,8 +1,14 @@
 <div class="face" (click)="faceClick()">
-  <img
-    src="{{ getFaceUrl() }}"
-  />
+  <img src="{{ getFaceUrl() }}" />
   <div class="do-not-exist" *ngIf="!face.sourceUrl">
     <mat-icon color="accent">close</mat-icon>
   </div>
+  <button
+    class="face-button delete accent-light-background-color"
+    mat-icon-button
+    color="accent"
+    (click)="deleteFace($event)"
+  >
+    <mat-icon>delete</mat-icon>
+  </button>
 </div>

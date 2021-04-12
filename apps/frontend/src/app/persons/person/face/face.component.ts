@@ -9,14 +9,19 @@ import {
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Face } from '@face-recognition-editor/data';
+import { Face, Person } from '@face-recognition-editor/data';
 import { MaterialModule } from '@face-recognition-editor/material';
 import { PersonService } from '../person.service';
 
 export interface DialogData {
   face: Face;
   faceSourceUrl: string;
+}
+export interface DialogDeleteData {
+  person_name: string;
+  face: Face;
+  faceUrl: string;
+
 }
 
 @Component({
@@ -25,7 +30,7 @@ export interface DialogData {
   styleUrls: ['./face.component.css'],
 })
 export class FaceComponent implements OnInit {
-  @Input() person_id: string;
+  @Input() person: Person;
   @Input() face: Face;
   @Input() validated: boolean;
 
@@ -38,7 +43,7 @@ export class FaceComponent implements OnInit {
   ngOnInit(): void {}
 
   faceClick() {
-    console.log('faceClick ' + this.person_id + ' ' + this.face);
+    // console.log('faceClick ' + this.person.id + ' ' + this.face);
     if (!this.face.sourceUrl) {
       this._snackBar.open('Image do not exist anymore !!', '', {
         duration: 2000,
@@ -53,9 +58,32 @@ export class FaceComponent implements OnInit {
     });
   }
 
+  deleteFace(event: any) {
+    // console.log('deleteFace');
+    event.stopPropagation();
+
+    const dialogRef = this.dialog.open(FaceComponentDeleteDialog, {
+      data: {
+        face: this.face,
+        person_name: this.person.name,
+        faceUrl: this.getFaceUrl()
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this._personService.deleteFace(
+          this.person,
+          this.validated,
+          this.face.url
+        );
+      }
+      // console.log('The dialog was closed' + result);
+    });
+  }
   getFaceUrl() {
     return this._personService.getFaceUrl(
-      this.person_id,
+      this.person.id,
       this.validated,
       this.face.url
     );
@@ -79,12 +107,9 @@ export class FaceComponentDialog {
     private hostElement: ElementRef
   ) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
-  onClose() {
-    
-  }
+  onClose() {}
 
   onLoad() {
     let styles = getComputedStyle(
@@ -131,9 +156,24 @@ export class FaceComponentDialog {
   }
 }
 
+@Component({
+  selector: 'face-recognition-editor-face-delete-dialog',
+  templateUrl: 'face.component.delete.dialog.html',
+  styleUrls: ['./face.component.css'],
+})
+export class FaceComponentDeleteDialog {
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: DialogDeleteData,
+  ) {}
+
+  ngOnInit() {}
+
+}
+
 @NgModule({
   imports: [BrowserModule, MaterialModule],
-  declarations: [FaceComponent, FaceComponentDialog],
+  declarations: [FaceComponent, FaceComponentDialog, FaceComponentDeleteDialog],
   providers: [
     //PersonService
   ],

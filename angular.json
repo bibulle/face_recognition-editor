@@ -51,7 +51,7 @@
               "apps/frontend/src/favicon.ico",
               "apps/frontend/src/assets"
             ],
-            "styles": ["apps/frontend/src/styles.less"],
+            "styles": ["apps/frontend/src/styles.scss"],
             "scripts": []
           },
           "configurations": {

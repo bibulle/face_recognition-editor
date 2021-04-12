@@ -52,7 +52,7 @@
         <face-recognition-editor-face
           *ngFor="let f of person.getValidated()"
           class="face"
-          [person_id]="person.id"
+          [person]="person"
           [face]="f"
           [validated]="true"
         >
@@ -75,7 +75,7 @@
         <face-recognition-editor-face
           *ngFor="let f of person.getToValidate()"
           class="face"
-          [person_id]="person.id"
+          [person]="person"
           [face]="f"
           [validated]="false"
         >

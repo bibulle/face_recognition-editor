@@ -30,6 +30,7 @@
   height: 4em;
   width: 4em;
   transition: width 0.5s ease, height 0.5s ease;
+  display: flex;
 }
 .face:hover .do-not-exist {
   height: 6em;
@@ -45,15 +46,34 @@
   font-size: 6em;
 }
 
-
-
-
-.dialog-header {
-    padding-left: 0;
-    padding-bottom: 12px;
+/* --------------------- */
+.face .face-button {
+  position: absolute;
+  /* background-color: lightgoldenrodyellow; */
+  transform: scale(0.75);
+  top: calc(-1em - 10px);
+  opacity: 0;
+  transition: opacity 0.1s ease, top 0.5s ease;
 }
+.face:hover .face-button {
+    opacity: 1;
+    top: calc(-2em - 10px);
+    transition: opacity 3s ease, top 0.5s ease;
+}
+.face .face-button.delete {
+    right: -5px;
+}
+
+.face-dialog {
+    flex-grow: 100;
+    justify-content: center;
+    display: flex;
+    height: 6em;
+}
+
+/* --------------------- */
 .dialog-header .url {
-    font-size: 2em;
+  font-size: 2em;
 }
 
 .image-origin {
@@ -65,9 +85,9 @@
   margin-left: 24px;
   /* background-color: red; */
   border-width: 2px;
-  border-color: red;
+  /* border-color: red; */
   border-style: solid;
-  opacity: 0.5;
+  opacity: 0.8;
   width: 100px;
   height: 100px;
   position: absolute;
