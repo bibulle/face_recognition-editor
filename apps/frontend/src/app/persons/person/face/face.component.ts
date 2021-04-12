@@ -79,7 +79,8 @@ export class FaceComponentDialog {
     private hostElement: ElementRef
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   onClose() {
     
@@ -92,6 +93,10 @@ export class FaceComponentDialog {
 
     this.imageWidth = parseInt(styles.width, 10);
     this.imageHeight = parseInt(styles.height, 10);
+  }
+
+  getReadableUrl(encodedUrl: string) {
+    return decodeURIComponent(encodedUrl);
   }
 
   getFaceTop() {
