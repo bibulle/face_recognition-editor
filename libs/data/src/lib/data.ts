@@ -39,17 +39,21 @@ export class Person {
 
 export class Face {
   url: string;
+  validated: boolean;
 
   sourceUrl: string;
+
   top: number;
   right: number;
   left: number;
   bottom: number;
+
   width: number;
   height: number;
 
-  constructor(url: string) {
+  constructor(url: string, validated: boolean) {
     this.url = encodeURIComponent(url);
+    this.validated = validated;
   }
 }
  

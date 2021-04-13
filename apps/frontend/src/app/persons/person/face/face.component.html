@@ -1,4 +1,4 @@
-<div class="face" (click)="faceClick()">
+<div class="face" (click)="faceClick()" [ngClass]="face.validated ? 'validated' : 'to-be-validated'">
   <img src="{{ getFaceUrl() }}" />
   <div class="do-not-exist" *ngIf="!face.sourceUrl">
     <mat-icon color="accent">close</mat-icon>
@@ -10,5 +10,19 @@
     (click)="deleteFace($event)"
   >
     <mat-icon>delete</mat-icon>
+  </button>
+  <button
+    class="face-button validate ok-color ok-light-background-color"
+    mat-icon-button
+    (click)="validateFace($event)"
+  >
+    <mat-icon>thumb_up</mat-icon>
+  </button>
+  <button
+    class="face-button unvalidate warn-color warn-light-background-color"
+    mat-icon-button
+    (click)="unvalidateFace($event)"
+  >
+    <mat-icon>thumb_down</mat-icon>
   </button>
 </div>

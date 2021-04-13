@@ -1,9 +1,10 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { readdir, stat, rename, statSync, accessSync, unlink } from 'fs';
+import { readdir, stat, rename, accessSync, unlink } from 'fs';
 import { join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
 import * as gm from 'gm';
+import { stringify } from 'node:querystring';
 
 const im = gm.subClass({ imageMagick: true });
 
@@ -14,6 +15,10 @@ const TEST_DIR = process.env.TEST_DIR || '/test_dir';
 export class PersonService {
   private readonly logger = new Logger(PersonService.name);
 
+  /**
+   * Find all persons (summaries)
+   * @returns
+   */
   async findAll(): Promise<Person[]> {
     return new Promise<Person[]>((resolve, reject) => {
       readdir(TRAIN_DIR, { withFileTypes: true }, (err, files) => {
@@ -36,6 +41,11 @@ export class PersonService {
     });
   }
 
+  /**
+   * Find on person (full) by name
+   * @param name
+   * @returns
+   */
   async findOne(name: string): Promise<Person> {
     return new Promise<Person>((resolve, reject) => {
       readdir(
@@ -53,7 +63,7 @@ export class PersonService {
               return f.isFile() && !f.name.startsWith('.');
             })
             .map((f) => {
-              return this.findOneFaceOrigin(f.name);
+              return this.findOneFaceOrigin(f.name, true);
             });
 
           let toValidate = [];
@@ -67,7 +77,7 @@ export class PersonService {
                     return f.isFile();
                   })
                   .map((f) => {
-                    return this.findOneFaceOrigin(f.name);
+                    return this.findOneFaceOrigin(f.name, false);
                   });
               }
 
@@ -82,6 +92,13 @@ export class PersonService {
     });
   }
 
+  /**
+   * Get the full path of a face (the image)
+   * @param name
+   * @param type
+   * @param face
+   * @returns
+   */
   findOneFaceFullPath(name: string, type: string, face: string): string {
     if (type === 'validated') {
       return resolve(join(TRAIN_DIR, name, face));
@@ -89,14 +106,24 @@ export class PersonService {
       return resolve(join(TRAIN_DIR, name, 'tovalidate', face));
     }
   }
+  /**
+   * get the full path of the source image
+   * @param path
+   * @returns
+   */
   findOneFaceSrcFullPath(path: string): string {
     return join(TEST_DIR, path);
   }
 
-  async findOneFaceOrigin(face: string): Promise<Face> {
+  /**
+   * Construct the face object from the face name (the image name)
+   * @param face
+   * @returns
+   */
+  async findOneFaceOrigin(face: string, validated: boolean): Promise<Face> {
     return new Promise<Face>((resolve, reject) => {
       //this.logger.log(`findOneFaceOrigin(${face})`);
-      const ret = new Face(face);
+      const ret = new Face(face, validated);
 
       const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
 
@@ -176,6 +203,12 @@ export class PersonService {
     });
   }
 
+  /**
+   * Check if a file exist (exists from fs is deprecated)
+   * @param root
+   * @param path
+   * @returns
+   */
   isFileExist(root: string, path: string): boolean {
     let ret = false;
     try {
@@ -185,7 +218,14 @@ export class PersonService {
     return ret;
   }
 
-  async updateName(id: string, name: string): Promise<Person> {
+  /**
+   * Update a person (only changing name for now)
+   * @param id the old person id
+   * @param p the "futur" person
+   * @returns
+   */
+  async updatePerson(id: string, p: Person): Promise<Person> {
+    //this.logger.log(`updatePerson('${id}', '${JSON.stringify(p)}')`);
     return new Promise<Person>((resolve, reject) => {
       const fullPath = join(TRAIN_DIR, id);
       stat(fullPath, (err, stats) => {
@@ -195,30 +235,100 @@ export class PersonService {
         if (!stats.isDirectory()) {
           return reject(`${id} not found !!`);
         }
-        if (!name || name.length == 0 || new String(name).startsWith('.')) {
-          return reject(`'${name}' name is not allowed !!`);
+
+        if (!p) {
+          return reject('Cannot update to empty person !!');
         }
 
-        rename(fullPath, join(TRAIN_DIR, name.toString()), (err) => {
-          if (err) {
-            return reject(err);
+        if (!p.name) {
+          return resolve(this.findOne(id));
+        } else {
+          if (p.name.length == 0 || new String(p.name).startsWith('.')) {
+            return reject(`'${p.name}' name is not allowed !!`);
           }
-          this.findOne(name.toString())
-            .catch((e) => {
-              reject(e);
-            })
-            .then((p) => {
-              if (!p) {
-                reject('Something go wrong');
-              } else {
-                resolve(p);
-              }
-            });
-        });
+
+          rename(fullPath, join(TRAIN_DIR, p.name.toString()), (err) => {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(this.findOne(p.name.toString()));
+          });
+        }
       });
     });
   }
 
+  /**
+   * Update a face (only validate for now)
+   * @param name
+   * @param type
+   * @param face
+   * @param f
+   * @returns
+   */
+  async updateFace(
+    name: string,
+    type: string,
+    face: string,
+    f: Face
+  ): Promise<Person> {
+    return new Promise<Person>((resolve, reject) => {
+      // this.logger.log(
+      //   `updateFace('${name}', '${type}', '${face}', '${JSON.stringify(f)}')`
+      // );
+
+      const srcPath = this.findOneFaceFullPath(name, type, face);
+
+      stat(srcPath, async (err, stats) => {
+        if (err && err.code === 'ENOENT') {
+          // file not found... error
+          reject(err);
+        } else if (err) {
+          reject(err);
+        } else if (!stats.isFile()) {
+          this.logger.error(`This face is not a file !! '${srcPath}'`);
+          reject(`This face is not a file !! '${srcPath}'`);
+        } else {
+          // face ok... check it
+          if (f.validated === undefined) {
+            return resolve(this.findOne(name.toString()));
+          }
+          if (f.validated && type === 'validated') {
+            return reject(
+              `Face already validated ('${name}', '${type}', '${face}')`
+            );
+          }
+          if (!f.validated && type === 'notvalidated') {
+            return reject(
+              `Face already not validated ('${name}', '${type}', '${face}')`
+            );
+          }
+
+          const trgPath = this.findOneFaceFullPath(
+            name,
+            f.validated ? 'validated' : 'notvalidated',
+            face
+          );
+          // face ok... move it
+          //this.logger.log(`moving '${srcPath}'->'${trgPath}'`);
+          rename(srcPath, trgPath, async (err) => {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(this.findOne(name.toString()));
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Remove a face
+   * @param name
+   * @param type
+   * @param face
+   * @returns
+   */
   async removeFace(name: string, type: string, face: string): Promise<Person> {
     return new Promise<Person>((resolve, reject) => {
       const path = this.findOneFaceFullPath(name, type, face);
@@ -228,31 +338,23 @@ export class PersonService {
           // file not found... do nothing
           const ret = await this.findOne(name);
           resolve(ret);
-    } else if (err) {
+        } else if (err) {
           reject(err);
         } else if (!stats.isFile()) {
           this.logger.error(`This face is not a file !! '${path}'`);
           reject(`This face is not a file !! '${path}'`);
         } else {
           this.logger.log(`removing '${path}'`);
-          unlink(path, async err => {
+          unlink(path, async (err) => {
             if (err) {
               return reject(err);
             }
             const ret = await this.findOne(name);
             resolve(ret);
-          })
+          });
         }
       });
     });
-  }
-
-  update(id: number, updatePersonDto: Person) {
-    return `This action updates a #${id} person`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} person`;
   }
 
   // sleep(ms) {

@@ -10,7 +10,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PersonService } from './person.service';
-import { Person } from '@face-recognition-editor/data';
+import { Face, Person } from '@face-recognition-editor/data';
 import { Res } from '@nestjs/common';
 
 @Controller('person')
@@ -38,6 +38,17 @@ export class PersonController {
     return this.personService.findOne(id);
   }
   /**
+   * Patch a person
+   * @param id id of the person to change
+   * @param obj body (containing the new person name or whatever)
+   * @returns
+   */
+  @Patch(':id')
+  updatePerson(@Param('id') id: string, @Body() obj: Person) {
+    return this.personService.updatePerson(id, obj);
+  }
+
+  /**
    * Get the face image
    * @param name the person name
    * @param type the face type (validated, toBeValidate)
@@ -46,7 +57,7 @@ export class PersonController {
    * @returns
    */
   @Get(':name/:type/:face')
-  findOneImage(
+  findOneFace(
     @Param('name') name: string,
     @Param('type') type: string,
     @Param('face') face: string,
@@ -54,6 +65,23 @@ export class PersonController {
   ) {
     const path = this.personService.findOneFaceFullPath(name, type, face);
     return res.sendFile(path);
+  }
+  /**
+   * Patch a face image
+   * @param name the person name
+   * @param type the face type (validated, toBeValidate)
+   * @param face the face name
+   * @param res the http response
+   * @returns
+   */
+  @Patch(':name/:type/:face')
+  updateFace(
+    @Param('name') name: string,
+    @Param('type') type: string,
+    @Param('face') face: string,
+    @Body() obj: Face
+  ) {
+    return this.personService.updateFace(name, type, face, obj);
   }
   /**
    * Get the face source images
@@ -66,27 +94,6 @@ export class PersonController {
     const fullPath = this.personService.findOneFaceSrcFullPath(path);
     return res.sendFile(fullPath);
   }
-
-  /**
-   * Rename the person
-   * @param id id of the person to change
-   * @param obj body (containing the new person name)
-   * @returns
-   */
-  @Put(':id/rename')
-  updateName(@Param('id') id: string, @Body() obj: { name: string }) {
-    return this.personService.updateName(id, obj.name);
-  }
-  // /**
-  //  * Modify a person
-  //  * @param id
-  //  * @param updatePersonDto
-  //  * @returns
-  //  */
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePersonDto: Person) {
-  //   return this.personService.update(+id, updatePersonDto);
-  // }
 
   /**
    * Delete a face image

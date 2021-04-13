@@ -56,12 +56,18 @@
   transition: opacity 0.1s ease, top 0.5s ease;
 }
 .face:hover .face-button {
-    opacity: 1;
+    opacity: 0.5;
     top: calc(-2em - 10px);
     transition: opacity 3s ease, top 0.5s ease;
 }
 .face .face-button.delete {
     right: -5px;
+}
+.face .face-button.validate, .face .face-button.unvalidate {
+    left: -5px;
+}
+.validated .face-button.validate, .to-be-validated .face-button.unvalidate {
+    display: none;
 }
 
 .face-dialog {
@@ -71,6 +77,18 @@
     height: 6em;
 }
 
+.image-origin .face-button {
+    position: absolute;
+    top: 2px;
+    opacity: 0.5;
+  }
+  .image-origin .face-button.delete {
+    right: 4px;
+  }
+  .image-origin .face-button.validate, .image-origin .face-button.unvalidate {
+    left: 26px;
+  }
+  
 /* --------------------- */
 .dialog-header .url {
   font-size: 2em;

@@ -21,7 +21,6 @@ export interface DialogDeleteData {
   person_name: string;
   face: Face;
   faceUrl: string;
-
 }
 
 @Component({
@@ -32,7 +31,6 @@ export interface DialogDeleteData {
 export class FaceComponent implements OnInit {
   @Input() person: Person;
   @Input() face: Face;
-  @Input() validated: boolean;
 
   constructor(
     public dialog: MatDialog,
@@ -56,17 +54,58 @@ export class FaceComponent implements OnInit {
         faceSourceUrl: this.getFaceSrcUrl(),
       },
     });
+    dialogRef.afterClosed().subscribe((result) => {
+      // console.log('The dialog was closed ' + result);
+      switch (result) {
+        case 'validateFace':
+          this.validateFace();
+          break;
+        case 'unvalidateFace':
+          this.unvalidateFace();
+          break;
+        case 'deleteFace':
+          this.deleteFace();
+          break;
+        case '':
+          break;
+        default:
+          console.error("Wrong parameter from Dialog");
+          break;
+      }
+    });
   }
 
-  deleteFace(event: any) {
+  validateFace(event?: any) {
+    // console.log('validateFace');
+    if (event) event.stopPropagation();
+
+    this._personService.validateFace(
+      this.person,
+      this.face.validated,
+      this.face.url,
+      true
+    );
+  }
+  unvalidateFace(event?: any) {
+    // console.log('unvalidateFace');
+    if (event) event.stopPropagation();
+
+    this._personService.validateFace(
+      this.person,
+      this.face.validated,
+      this.face.url,
+      false
+    );
+  }
+  deleteFace(event?: any) {
     // console.log('deleteFace');
-    event.stopPropagation();
+    if (event) event.stopPropagation();
 
     const dialogRef = this.dialog.open(FaceComponentDeleteDialog, {
       data: {
         face: this.face,
         person_name: this.person.name,
-        faceUrl: this.getFaceUrl()
+        faceUrl: this.getFaceUrl(),
       },
     });
 
@@ -74,7 +113,7 @@ export class FaceComponent implements OnInit {
       if (result) {
         this._personService.deleteFace(
           this.person,
-          this.validated,
+          this.face.validated,
           this.face.url
         );
       }
@@ -84,7 +123,7 @@ export class FaceComponent implements OnInit {
   getFaceUrl() {
     return this._personService.getFaceUrl(
       this.person.id,
-      this.validated,
+      this.face.validated,
       this.face.url
     );
   }
@@ -162,13 +201,9 @@ export class FaceComponentDialog {
   styleUrls: ['./face.component.css'],
 })
 export class FaceComponentDeleteDialog {
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: DialogDeleteData,
-  ) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogDeleteData) {}
 
   ngOnInit() {}
-
 }
 
 @NgModule({
