@@ -50,45 +50,57 @@
 .face .face-button {
   position: absolute;
   /* background-color: lightgoldenrodyellow; */
-  transform: scale(0.75);
+  transform: scale(0.6);
   top: calc(-1em - 10px);
   opacity: 0;
   transition: opacity 0.1s ease, top 0.5s ease;
 }
 .face:hover .face-button {
-    opacity: 0.5;
-    top: calc(-2em - 10px);
-    transition: opacity 3s ease, top 0.5s ease;
+  opacity: 0.5;
+  top: calc(-2em - 10px);
+  transition: opacity 3s ease, top 0.5s ease;
 }
 .face .face-button.delete {
-    right: -5px;
+  right: -6px;
 }
-.face .face-button.validate, .face .face-button.unvalidate {
-    left: -5px;
+.face .face-button.validate,
+.face .face-button.unvalidate {
+  left: -6px;
 }
-.validated .face-button.validate, .to-be-validated .face-button.unvalidate {
-    display: none;
+.face .face-button.move {
+  left: 22px;
+}
+.validated .face-button.validate,
+.to-be-validated .face-button.unvalidate {
+  display: none;
 }
 
 .face-dialog {
-    flex-grow: 100;
-    justify-content: center;
-    display: flex;
-    height: 6em;
+  flex-grow: 100;
+  justify-content: center;
+  display: flex;
+  height: 6em;
+}
+.move.face-dialog {
+  justify-content: space-around;
 }
 
 .image-origin .face-button {
-    position: absolute;
-    top: 2px;
-    opacity: 0.5;
-  }
-  .image-origin .face-button.delete {
-    right: 4px;
-  }
-  .image-origin .face-button.validate, .image-origin .face-button.unvalidate {
-    left: 26px;
-  }
-  
+  position: absolute;
+  top: 2px;
+  opacity: 0.5;
+}
+.image-origin .face-button.delete {
+  right: 4px;
+}
+.image-origin .face-button.validate,
+.image-origin .face-button.unvalidate {
+  left: 26px;
+}
+.image-origin .face-button.move {
+  left: 70px;
+}
+
 /* --------------------- */
 .dialog-header .url {
   font-size: 2em;

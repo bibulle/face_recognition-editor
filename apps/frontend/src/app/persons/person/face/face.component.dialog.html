@@ -4,9 +4,19 @@
     <mat-icon class="close-icon" color="primary">close</mat-icon>
   </button>
 </div>
-<mat-dialog-content class="mat-typography image-origin" [ngClass]="data.face.validated ? 'validated' : 'to-be-validated'">
-  <img width="100%" height="100%" src="{{data.faceSourceUrl}}" (load)="onLoad()" onresize="onResize()"/>
-  <div *ngIf="getFaceTop() !== 0"
+<mat-dialog-content
+  class="mat-typography image-origin"
+  [ngClass]="data.face.validated ? 'validated' : 'to-be-validated'"
+>
+  <img
+    width="100%"
+    height="100%"
+    src="{{data.faceSourceUrl}}"
+    (load)="onLoad()"
+    onresize="onResize()"
+  />
+  <div
+    *ngIf="getFaceTop() !== 0"
     class="cadre accent-border-color"
     [style.top]="getFaceTop()+'px'"
     [style.height]="getFaceHeight()+'px'"
@@ -14,25 +24,36 @@
     [style.width]="getFaceWidth()+'px'"
   ></div>
   <button
-  class="face-button delete accent-light-background-color"
-  mat-icon-button
-  color="accent"
-  mat-dialog-close="deleteFace"
->
-  <mat-icon>delete</mat-icon>
-</button>
-<button
-  class="face-button validate ok-color ok-light-background-color"
-  mat-icon-button
-  mat-dialog-close="validateFace"
->
-  <mat-icon>thumb_up</mat-icon>
-</button>
-<button
-class="face-button unvalidate warn-color warn-light-background-color"
-mat-icon-button
-mat-dialog-close="unvalidateFace"
->
-<mat-icon>thumb_down</mat-icon>
-</button>
+    class="face-button delete accent-light-background-color"
+    mat-icon-button
+    color="accent"
+    mat-dialog-close="deleteFace"
+    matTooltip="Delete this face"
+  >
+    <mat-icon>delete</mat-icon>
+  </button>
+  <button
+    class="face-button validate ok-color ok-light-background-color"
+    mat-icon-button
+    mat-dialog-close="validateFace"
+    matTooltip="Validate this face"
+  >
+    <mat-icon>thumb_up</mat-icon>
+  </button>
+  <button
+    class="face-button unvalidate warn-color warn-light-background-color"
+    mat-icon-button
+    mat-dialog-close="unvalidateFace"
+    matTooltip="Unvalidate this face"
+  >
+    <mat-icon>thumb_down</mat-icon>
+  </button>
+  <button
+    class="face-button move warn-color warn-light-background-color"
+    mat-icon-button
+    mat-dialog-close="moveFace"
+    matTooltip="Move this face"
+  >
+    <mat-icon>front_hand</mat-icon>
+  </button>
 </mat-dialog-content>

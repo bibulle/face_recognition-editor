@@ -14,10 +14,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatBadgeModule } from '@angular/material/badge';
 import { FormsModule } from '@angular/forms';
-import { MatDialogModule} from '@angular/material/dialog';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
-
-
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   imports: [
@@ -37,7 +37,9 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     MatBadgeModule,
     FormsModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatAutocompleteModule,
+    MatTooltipModule
   ],
   exports: [
     FlexLayoutModule,
@@ -56,7 +58,9 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     MatBadgeModule,
     FormsModule,
     MatDialogModule,
-    MatSnackBarModule
-  ]
+    MatSnackBarModule,
+    MatAutocompleteModule,
+    MatTooltipModule
+  ],
 })
 export class MaterialModule {}

@@ -1,10 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { readdir, stat, rename, accessSync, unlink } from 'fs';
+import { readdir, stat, rename, accessSync, unlink, mkdir, rmdirSync} from 'fs';
 import { join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
 import * as gm from 'gm';
-import { stringify } from 'node:querystring';
 
 const im = gm.subClass({ imageMagick: true });
 
@@ -29,6 +28,11 @@ export class PersonService {
           files
             .filter((d) => {
               return d.isDirectory();
+            })
+            .filter((d) => {
+              try {rmdirSync(join(TRAIN_DIR, d.name, 'tovalidate'));} catch (error) {}
+              try {rmdirSync(join(TRAIN_DIR, d.name));} catch (error) {}
+              return this.isFileExist(TRAIN_DIR, d.name)
             })
             .filter((v, i) => {
               return i < 1000000;
@@ -351,6 +355,69 @@ export class PersonService {
             }
             const ret = await this.findOne(name);
             resolve(ret);
+          });
+        }
+      });
+    });
+  }
+
+  async moveFace(
+    name: string,
+    type: string,
+    face: string,
+    personName: string
+  ): Promise<Person> {
+    return new Promise<Person>((resolve, reject) => {
+      this.logger.log(
+        `moveFace('${name}', '${type}', '${face}', '${personName}')`
+      );
+
+      const srcPath = this.findOneFaceFullPath(name, type, face);
+
+      stat(srcPath, async (err, stats) => {
+        if (err && err.code === 'ENOENT') {
+          // file not found... error
+          reject(err);
+        } else if (err) {
+          reject(err);
+        } else if (!stats.isFile()) {
+          this.logger.error(`This face is not a file !! '${srcPath}'`);
+          reject(`This face is not a file !! '${srcPath}'`);
+        } else {
+          // face ok... check target
+          const trgDirPath = join(TRAIN_DIR, personName);
+          stat(trgDirPath, (err, stats) => {
+            if (err && err.code === 'ENOENT') {
+              /// dir do not exist... create it then move your file
+              mkdir(trgDirPath, (err) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  const trgPath = this.findOneFaceFullPath(personName, 'validated', face);
+                  rename(srcPath, trgPath, (err) => {
+                    if (err) {
+                      reject(err);
+                    } else {
+                      return resolve(this.findOne(name.toString()));
+                    }
+                  });
+                }
+              });
+            } else if (err) {
+              reject(err);
+            } else if (!stats.isDirectory()) {
+              reject(`This person is not a directory !! '${trgDirPath}'`);
+            } else {
+              /// everything is ok, move it
+              const trgPath = this.findOneFaceFullPath(personName, 'validated', face);
+              rename(srcPath, trgPath, (err) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  return resolve(this.findOne(name.toString()));
+                }
+              });
+            }
           });
         }
       });

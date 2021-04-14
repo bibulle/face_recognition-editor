@@ -6,11 +6,14 @@ import {
   NgModule,
   OnInit,
 } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserModule } from '@angular/platform-browser';
 import { Face, Person } from '@face-recognition-editor/data';
 import { MaterialModule } from '@face-recognition-editor/material';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { PersonService } from '../person.service';
 
 export interface DialogData {
@@ -23,6 +26,9 @@ export interface DialogDeleteData {
   faceUrl: string;
 }
 
+/* ------------------------ 
+    Main component
+   ------------------------ */
 @Component({
   selector: 'face-recognition-editor-face',
   templateUrl: './face.component.html',
@@ -66,10 +72,14 @@ export class FaceComponent implements OnInit {
         case 'deleteFace':
           this.deleteFace();
           break;
+        case 'moveFace':
+          this.moveFace();
+          break;
         case '':
+        case undefined:
           break;
         default:
-          console.error("Wrong parameter from Dialog");
+          console.error(`Wrong parameter from Dialog '${result}'`);
           break;
       }
     });
@@ -120,6 +130,31 @@ export class FaceComponent implements OnInit {
       // console.log('The dialog was closed' + result);
     });
   }
+  moveFace(event?: any) {
+    console.log('moveFace');
+    if (event) event.stopPropagation();
+
+    const dialogRef = this.dialog.open(FaceComponentMoveDialog, {
+      data: {
+        face: this.face,
+        person_name: this.person.name,
+        faceUrl: this.getFaceUrl(),
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log(`The dialog was closed '${result}'`);
+      if (result) {
+        this._personService.moveFace(
+          this.person,
+          this.face.validated,
+          this.face.url,
+          result
+        );
+      }
+    });
+  }
+
   getFaceUrl() {
     return this._personService.getFaceUrl(
       this.person.id,
@@ -132,6 +167,9 @@ export class FaceComponent implements OnInit {
   }
 }
 
+/* ------------------------ 
+    Main Dialog (source image)
+   ------------------------ */
 @Component({
   selector: 'face-recognition-editor-face-dialog',
   templateUrl: 'face.component.dialog.html',
@@ -195,9 +233,12 @@ export class FaceComponentDialog {
   }
 }
 
+/* ------------------------ 
+    Delete face Dialog
+   ------------------------ */
 @Component({
   selector: 'face-recognition-editor-face-delete-dialog',
-  templateUrl: 'face.component.delete.dialog.html',
+  templateUrl: 'face.component.dialog.delete.html',
   styleUrls: ['./face.component.css'],
 })
 export class FaceComponentDeleteDialog {
@@ -206,9 +247,58 @@ export class FaceComponentDeleteDialog {
   ngOnInit() {}
 }
 
+/* ------------------------ 
+    Move face Dialog
+   ------------------------ */
+@Component({
+  selector: 'face-recognition-editor-face-move-dialog',
+  templateUrl: 'face.component.dialog.move.html',
+  styleUrls: ['./face.component.css'],
+})
+export class FaceComponentMoveDialog {
+  myControl = new FormControl();
+  options: string[] = [];
+  filteredOptions: Observable<string[]>;
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: DialogDeleteData,
+    private _personService: PersonService
+  ) {}
+
+  ngOnInit() {
+    this.options = this._personService.getPersonsName();
+
+    this.filteredOptions = this.myControl.valueChanges.pipe(
+      startWith(''),
+      map((value) => (typeof value === 'string' ? value : value.name)),
+      map((name) => (name ? this._filter(name) : this.options.slice()))
+    );
+  }
+
+  displayFn(personName: string): string {
+    return personName ? personName : '';
+  }
+
+  private _filter(name: string): string[] {
+    const filterValue = name.toLowerCase();
+
+    return this.options.filter(
+      (option) => option.toLowerCase().indexOf(filterValue) >= 0
+    );
+  }
+}
+
+/* ------------------------ 
+    Module
+   ------------------------ */
 @NgModule({
-  imports: [BrowserModule, MaterialModule],
-  declarations: [FaceComponent, FaceComponentDialog, FaceComponentDeleteDialog],
+  imports: [BrowserModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  declarations: [
+    FaceComponent,
+    FaceComponentDialog,
+    FaceComponentDeleteDialog,
+    FaceComponentMoveDialog,
+  ],
   providers: [
     //PersonService
   ],

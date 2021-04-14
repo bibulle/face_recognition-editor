@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Person } from '@face-recognition-editor/data';
 import { MaterialModule } from '@face-recognition-editor/material';
 import { PersonModule } from './person/person.component';
+import { PersonService } from './person/person.service';
 
 @Component({
   selector: 'face-recognition-editor-persons',
@@ -16,32 +17,14 @@ import { PersonModule } from './person/person.component';
 export class PersonsComponent implements OnInit {
   persons: Person[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private _personService: PersonService) {}
 
   ngOnInit(): void {
-    this.fetch();
-  }
-
-  // constructor(private http: HttpClient) {
-  //   this.fetch();
-  // }
-
-  fetch() {
-    this.http.get<Person[]>('/api/person').subscribe((t) => {
-      this.persons = t.map(p => {
-        const p1 = new Person(p.name);
-        p1.fill(p);
-        return p1;
-      })
-      console.log(this.persons);
+    this._personService.fetchAll().then(persons => {
+      this.persons = persons;
     });
   }
 
-  // addTodo() {
-  //   this.todos.push({
-  //     title: `New todo ${Math.floor(Math.random() * 1000)}`,
-  //   });
-  // }
 }
 
 @NgModule({

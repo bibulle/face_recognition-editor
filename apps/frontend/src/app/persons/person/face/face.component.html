@@ -4,10 +4,10 @@
     <mat-icon color="accent">close</mat-icon>
   </div>
   <button
-    class="face-button delete accent-light-background-color"
+    class="face-button delete warn-color warn-light-background-color"
     mat-icon-button
-    color="accent"
     (click)="deleteFace($event)"
+    matTooltip="Delete this face"
   >
     <mat-icon>delete</mat-icon>
   </button>
@@ -15,6 +15,7 @@
     class="face-button validate ok-color ok-light-background-color"
     mat-icon-button
     (click)="validateFace($event)"
+    matTooltip="Validate this face"
   >
     <mat-icon>thumb_up</mat-icon>
   </button>
@@ -22,7 +23,16 @@
     class="face-button unvalidate warn-color warn-light-background-color"
     mat-icon-button
     (click)="unvalidateFace($event)"
+    matTooltip="Unvalidate this face"
   >
     <mat-icon>thumb_down</mat-icon>
+  </button>
+  <button
+    class="face-button move warn-color warn-light-background-color"
+    mat-icon-button
+    (click)="moveFace($event)"
+    matTooltip="Move this face"
+  >
+    <mat-icon>front_hand</mat-icon>
   </button>
 </div>

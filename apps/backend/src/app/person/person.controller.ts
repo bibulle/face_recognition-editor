@@ -79,9 +79,13 @@ export class PersonController {
     @Param('name') name: string,
     @Param('type') type: string,
     @Param('face') face: string,
-    @Body() obj: Face
+    @Body() obj: Face | { personName: string }
   ) {
-    return this.personService.updateFace(name, type, face, obj);
+    if (obj instanceof Face) {
+      return this.personService.updateFace(name, type, face, obj);
+    } else {
+      return this.personService.moveFace(name, type, face, obj.personName);
+    }
   }
   /**
    * Get the face source images
