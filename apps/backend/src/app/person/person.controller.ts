@@ -79,12 +79,12 @@ export class PersonController {
     @Param('name') name: string,
     @Param('type') type: string,
     @Param('face') face: string,
-    @Body() obj: Face | { personName: string }
+    @Body() obj: { validated: string, personName: string }
   ) {
-    if (obj instanceof Face) {
-      return this.personService.updateFace(name, type, face, obj);
-    } else {
+    if (obj.personName) {
       return this.personService.moveFace(name, type, face, obj.personName);
+    } else {
+      return this.personService.updateFace(name, type, face, (obj as unknown) as Face);
     }
   }
   /**

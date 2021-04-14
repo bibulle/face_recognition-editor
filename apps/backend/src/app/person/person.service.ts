@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { readdir, stat, rename, accessSync, unlink, mkdir, rmdirSync} from 'fs';
-import { join, resolve } from 'path';
+import { readdir, stat, rename, accessSync, unlink, mkdir, rmdirSync, mkdirSync} from 'fs';
+import { dirname, join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
 import * as gm from 'gm';
 
@@ -315,6 +315,7 @@ export class PersonService {
           );
           // face ok... move it
           //this.logger.log(`moving '${srcPath}'->'${trgPath}'`);
+          try {mkdirSync(dirname(trgPath));} catch(e){}
           rename(srcPath, trgPath, async (err) => {
             if (err) {
               return reject(err);
