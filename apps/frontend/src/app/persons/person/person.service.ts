@@ -1,22 +1,38 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Person } from '@face-recognition-editor/data';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Sort, SortPickerService } from '../../sort-picker/sort-picker.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PersonService {
-  constructor(private http: HttpClient, private _sortPicketService: SortPickerService) {
+  constructor(
+    private http: HttpClient,
+    private _sortPicketService: SortPickerService
+  ) {
     this._sortPicketService.getSortObservable().subscribe((s) => {
       PersonService._sort = s;
-      this.sortPersons();
+      this.launchSort();
     });
+
+    if (!PersonService._sortAsked) {
+      PersonService._sortAsked = new Subject<void>();
+      PersonService._sortAsked.pipe(debounceTime(200)).subscribe({
+        next: () => {
+          this.sortPersons();
+        },
+      });
+    }
   }
 
   private static _persons: Person[] = [];
   private static _sortedPerson: Person[] = [];
   private static _sort: Sort;
+
+  private static _sortAsked: Subject<void>;
 
   fetchAll(): Promise<Person[]> {
     return new Promise<Person[]>((resolve, reject) => {
@@ -48,7 +64,6 @@ export class PersonService {
             toBeDeleted.push(i);
           }
         });
-        
 
         // delete non-existing
         toBeDeleted.sort().reverse();
@@ -73,7 +88,7 @@ export class PersonService {
           }
         });
 
-        this.sortPersons()
+        this.launchSort();
         resolve(PersonService._sortedPerson);
       });
     });
@@ -83,7 +98,7 @@ export class PersonService {
     setTimeout(() => {
       this.http.get<Person>(this.getPersonUrl(person.id)).subscribe((p) => {
         person.fill(p);
-        this.sortPersons();
+        this.launchSort();
       });
     });
   }
@@ -109,7 +124,7 @@ export class PersonService {
       })
       .subscribe((p) => {
         person.fill(p);
-        this.sortPersons();
+        this.launchSort();
       });
   }
 
@@ -125,7 +140,7 @@ export class PersonService {
       })
       .subscribe((p) => {
         person.fill(p);
-        this.sortPersons();
+        this.launchSort();
       });
   }
   moveFace(
@@ -148,24 +163,28 @@ export class PersonService {
       .delete<Person>(this.getFaceUrl(person.id, validated, face_url))
       .subscribe((p) => {
         person.fill(p);
-        this.sortPersons();
+        this.launchSort();
       });
   }
 
+  launchSort() {
+    PersonService._sortAsked.next();
+  }
   sortPersons() {
-    // console.log(`sortPerson() : ${PersonService._sort}`);
-    
-    const sorted = [...PersonService._persons].sort((p1, p2) => {
-      return this.compare(p1, p2);
+    setTimeout(() => {
+      console.log(`sortPerson() : ${PersonService._sort} ...`);
+      const sorted = [...PersonService._persons].sort((p1, p2) => {
+        return this.compare(p1, p2);
+      });
+
+      while (PersonService._sortedPerson.length > sorted.length) {
+        PersonService._sortedPerson.splice(-1, 1);
+      }
+      sorted.forEach((p, i) => {
+        PersonService._sortedPerson[i] = p;
+      });
+      console.log(`sortPerson() : ${PersonService._sort} done`);
     });
-    
-    while(PersonService._sortedPerson.length > sorted.length) {
-      PersonService._sortedPerson.splice(-1,1)
-    }
-    sorted.forEach((p,i) => {
-      PersonService._sortedPerson[i] = p;
-    });
-    
   }
   compare(p1: Person, p2: Person): number {
     let ret = 0;
@@ -185,18 +204,18 @@ export class PersonService {
       case Sort.byActionNeeded:
         ret = p2.getToValidate().length - p1.getToValidate().length;
         if (ret == 0) {
-          ret -= p1.getValidated().filter(f => {
-            return !f.sourceUrl
-          }).length
-          ret -= p1.getToValidate().filter(f => {
-            return !f.sourceUrl
-          }).length
-          ret += p2.getValidated().filter(f => {
-            return !f.sourceUrl
-          }).length
-          ret += p2.getToValidate().filter(f => {
-            return !f.sourceUrl
-          }).length
+          ret -= p1.getValidated().filter((f) => {
+            return !f.sourceUrl;
+          }).length;
+          ret -= p1.getToValidate().filter((f) => {
+            return !f.sourceUrl;
+          }).length;
+          ret += p2.getValidated().filter((f) => {
+            return !f.sourceUrl;
+          }).length;
+          ret += p2.getToValidate().filter((f) => {
+            return !f.sourceUrl;
+          }).length;
         }
         break;
       case Sort.byName:
@@ -210,11 +229,9 @@ export class PersonService {
     if (ret === 0) {
       return p1.id.toLocaleLowerCase().localeCompare(p2.id.toLocaleLowerCase());
     } else {
-      return ret
+      return ret;
     }
   }
-
-
 
   getPersonUrl(person_id?: string): string {
     if (person_id) {
