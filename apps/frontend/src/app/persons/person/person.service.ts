@@ -1,14 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Person } from '@face-recognition-editor/data';
+import { Sort, SortPickerService } from '../../sort-picker/sort-picker.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PersonService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private _sortPicketService: SortPickerService) {
+    this._sortPicketService.getSortObservable().subscribe((s) => {
+      PersonService._sort = s;
+      this.sortPersons();
+    });
+  }
 
   private static _persons: Person[] = [];
+  private static _sortedPerson: Person[] = [];
+  private static _sort: Sort;
 
   fetchAll(): Promise<Person[]> {
     return new Promise<Person[]>((resolve, reject) => {
@@ -33,10 +41,8 @@ export class PersonService {
         const toBeDeleted: number[] = [];
         PersonService._persons.forEach((p, i) => {
           if (dictNew[p.id]) {
-            if (!p.summary && dictNew[p.id].summary) {
+            if (p.modificationTime < dictNew[p.id].modificationTime) {
               this.fetch(p);
-            } else {
-              p.fill(dictNew[p.id]);
             }
           } else {
             toBeDeleted.push(i);
@@ -67,7 +73,8 @@ export class PersonService {
           }
         });
 
-        resolve(PersonService._persons);
+        this.sortPersons()
+        resolve(PersonService._sortedPerson);
       });
     });
   }
@@ -76,6 +83,7 @@ export class PersonService {
     setTimeout(() => {
       this.http.get<Person>(this.getPersonUrl(person.id)).subscribe((p) => {
         person.fill(p);
+        this.sortPersons();
       });
     });
   }
@@ -101,6 +109,7 @@ export class PersonService {
       })
       .subscribe((p) => {
         person.fill(p);
+        this.sortPersons();
       });
   }
 
@@ -116,6 +125,7 @@ export class PersonService {
       })
       .subscribe((p) => {
         person.fill(p);
+        this.sortPersons();
       });
   }
   moveFace(
@@ -138,8 +148,73 @@ export class PersonService {
       .delete<Person>(this.getFaceUrl(person.id, validated, face_url))
       .subscribe((p) => {
         person.fill(p);
+        this.sortPersons();
       });
   }
+
+  sortPersons() {
+    // console.log(`sortPerson() : ${PersonService._sort}`);
+    
+    const sorted = [...PersonService._persons].sort((p1, p2) => {
+      return this.compare(p1, p2);
+    });
+    
+    while(PersonService._sortedPerson.length > sorted.length) {
+      PersonService._sortedPerson.splice(-1,1)
+    }
+    sorted.forEach((p,i) => {
+      PersonService._sortedPerson[i] = p;
+    });
+    
+  }
+  compare(p1: Person, p2: Person): number {
+    let ret = 0;
+    switch (PersonService._sort) {
+      case Sort.byCreationDate:
+        ret = p1.creationTime - p2.creationTime;
+        break;
+      case Sort.byCreationDateReverse:
+        ret = p2.modificationTime - p1.modificationTime;
+        break;
+      case Sort.byModificationDate:
+        ret = p2.modificationTime - p1.modificationTime;
+        break;
+      case Sort.byModificationDateReverse:
+        ret = p1.creationTime - p2.creationTime;
+        break;
+      case Sort.byActionNeeded:
+        ret = p2.getToValidate().length - p1.getToValidate().length;
+        if (ret == 0) {
+          ret -= p1.getValidated().filter(f => {
+            return !f.sourceUrl
+          }).length
+          ret -= p1.getToValidate().filter(f => {
+            return !f.sourceUrl
+          }).length
+          ret += p2.getValidated().filter(f => {
+            return !f.sourceUrl
+          }).length
+          ret += p2.getToValidate().filter(f => {
+            return !f.sourceUrl
+          }).length
+        }
+        break;
+      case Sort.byName:
+      default:
+        ret = p1.name
+          .toLocaleLowerCase()
+          .localeCompare(p2.name.toLocaleLowerCase());
+        break;
+    }
+
+    if (ret === 0) {
+      return p1.id.toLocaleLowerCase().localeCompare(p2.id.toLocaleLowerCase());
+    } else {
+      return ret
+    }
+  }
+
+
 
   getPersonUrl(person_id?: string): string {
     if (person_id) {

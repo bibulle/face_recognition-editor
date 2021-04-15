@@ -1,6 +1,16 @@
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { readdir, stat, rename, accessSync, unlink, mkdir, rmdirSync, mkdirSync} from 'fs';
+import {
+  readdir,
+  stat,
+  statSync,
+  rename,
+  accessSync,
+  unlink,
+  mkdir,
+  rmdirSync,
+  mkdirSync,
+} from 'fs';
 import { dirname, join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
 import * as gm from 'gm';
@@ -30,15 +40,21 @@ export class PersonService {
               return d.isDirectory();
             })
             .filter((d) => {
-              try {rmdirSync(join(TRAIN_DIR, d.name, 'tovalidate'));} catch (error) {}
-              try {rmdirSync(join(TRAIN_DIR, d.name));} catch (error) {}
-              return this.isFileExist(TRAIN_DIR, d.name)
+              try {
+                rmdirSync(join(TRAIN_DIR, d.name, 'tovalidate'));
+              } catch (error) {}
+              try {
+                rmdirSync(join(TRAIN_DIR, d.name));
+              } catch (error) {}
+              return this.isFileExist(TRAIN_DIR, d.name);
             })
             .filter((v, i) => {
               return i < 1000000;
             })
             .map((d) => {
-              return new Person(d.name);
+              const p = new Person(d.name);
+              this.fillDates(p);
+              return p;
             })
         );
       });
@@ -61,6 +77,7 @@ export class PersonService {
           }
           const person = new Person(name);
           this.logger.log(name);
+          this.fillDates(person);
 
           let validated = files
             .filter((f) => {
@@ -315,7 +332,9 @@ export class PersonService {
           );
           // face ok... move it
           //this.logger.log(`moving '${srcPath}'->'${trgPath}'`);
-          try {mkdirSync(dirname(trgPath));} catch(e){}
+          try {
+            mkdirSync(dirname(trgPath));
+          } catch (e) {}
           rename(srcPath, trgPath, async (err) => {
             if (err) {
               return reject(err);
@@ -394,7 +413,11 @@ export class PersonService {
                 if (err) {
                   reject(err);
                 } else {
-                  const trgPath = this.findOneFaceFullPath(personName, 'validated', face);
+                  const trgPath = this.findOneFaceFullPath(
+                    personName,
+                    'validated',
+                    face
+                  );
                   rename(srcPath, trgPath, (err) => {
                     if (err) {
                       reject(err);
@@ -410,7 +433,11 @@ export class PersonService {
               reject(`This person is not a directory !! '${trgDirPath}'`);
             } else {
               /// everything is ok, move it
-              const trgPath = this.findOneFaceFullPath(personName, 'validated', face);
+              const trgPath = this.findOneFaceFullPath(
+                personName,
+                'validated',
+                face
+              );
               rename(srcPath, trgPath, (err) => {
                 if (err) {
                   reject(err);
@@ -425,6 +452,18 @@ export class PersonService {
     });
   }
 
+  fillDates(person: Person) {
+    let stats = statSync(join(TRAIN_DIR, person.name));
+    person.creationTime = stats.birthtime.getTime();
+    person.modificationTime = stats.mtime.getTime();
+
+    try {
+      stats = statSync(join(TRAIN_DIR, person.name, 'tovalidate'));
+    } catch (error) {}
+    if (stats && stats.mtime.getTime() > person.modificationTime) {
+      person.modificationTime = stats.mtime.getTime();
+    }
+  }
   // sleep(ms) {
   //   return new Promise((resolve) => {
   //     setTimeout(resolve, ms);

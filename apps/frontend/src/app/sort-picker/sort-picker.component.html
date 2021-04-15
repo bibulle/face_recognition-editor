@@ -1,0 +1,48 @@
+<button mat-button mattooltip="Choose your sort" [matMenuTriggerFor]="sortMenu">
+  <span>{{ getSortLabel(sort) }}</span>
+  <mat-icon>arrow_drop_down</mat-icon>
+</button>
+<mat-menu #sortMenu="matMenu">
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byName"
+    (click)="setSort(Sort.byName)"
+  >
+    {{ getSortLabel(Sort.byName) }}
+  </button>
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byCreationDate"
+    (click)="setSort(Sort.byCreationDate)"
+  >
+    {{ getSortLabel(Sort.byCreationDate) }}
+  </button>
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byCreationDateReverse"
+    (click)="setSort(Sort.byCreationDateReverse)"
+  >
+    {{ getSortLabel(Sort.byCreationDateReverse) }}
+  </button>
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byModificationDate"
+    (click)="setSort(Sort.byModificationDate)"
+  >
+    {{ getSortLabel(Sort.byModificationDate) }}
+  </button>
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byModificationDateReverse"
+    (click)="setSort(Sort.byModificationDateReverse)"
+  >
+    {{ getSortLabel(Sort.byModificationDateReverse) }}
+  </button>
+  <button
+    mat-menu-item
+    *ngIf="sort !== Sort.byActionNeeded"
+    (click)="setSort(Sort.byActionNeeded)"
+  >
+    {{ getSortLabel(Sort.byActionNeeded) }}
+  </button>
+</mat-menu>

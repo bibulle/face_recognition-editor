@@ -13,9 +13,7 @@
       src="/assets/unknownFace1.png"
     />
     <mat-card-title>
-      <span *ngIf="!editing_name" (click)="nameClick()">{{
-        person.name
-      }}</span>
+      <span *ngIf="!editing_name" (click)="nameClick()">{{ person.name }}</span>
       <mat-form-field
         *ngIf="editing_name"
         appearance="standard"
@@ -24,21 +22,29 @@
         (focusout)="nameFocusOut()"
         (focusin)="nameFocusIn()"
       >
-        <input matInput [(ngModel)]="person.name" 
-        (ngModelChange)="nameChanged()"/>
+        <input
+          matInput
+          [(ngModel)]="person.name"
+          (ngModelChange)="nameChanged()"
+        />
       </mat-form-field>
     </mat-card-title>
     <mat-card-subtitle>&nbsp;</mat-card-subtitle>
-  </mat-card-header>
+    <div class="description">
+      <span>Creation : {{ person.creationTime | date: 'medium' }}</span>
+      <span
+        >Modification : {{ person.modificationTime | date: 'medium' }}</span
+      >
+    </div>
+</mat-card-header>
   <mat-card-content>
     <mat-accordion class="person_faces">
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <span *ngIf="person.summary"
-              >Loading ...</span
-            >
-            <span *ngIf="!person.summary"
+            <span *ngIf="person.summary">Loading ...</span>
+            <span
+              *ngIf="!person.summary"
               matBadge="{{ person.getValidated().length }}"
               matBadgeSize="small"
               matBadgeOverlap="true"

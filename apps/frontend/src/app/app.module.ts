@@ -6,6 +6,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
 import { PersonsModule } from './persons/persons.component';
 import { MaterialModule } from '@face-recognition-editor/material';
+import { SortPickerModule } from './sort-picker/sort-picker.component';
 
 
 @NgModule({
@@ -17,7 +18,8 @@ import { MaterialModule } from '@face-recognition-editor/material';
     BrowserAnimationsModule,
     HttpClientModule,
     MaterialModule,
-    PersonsModule
+    PersonsModule,
+    SortPickerModule
   ],
   providers: [],
   bootstrap: [AppComponent],

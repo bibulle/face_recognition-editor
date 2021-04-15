@@ -2,6 +2,10 @@ export class Person {
   id: string;
   name: string;
   summary: boolean;
+
+  creationTime: number = 0;
+  modificationTime: number = 0;
+
   private validated: Face[] = [];
   private toValidate: Face[] = [];
 
@@ -31,6 +35,8 @@ export class Person {
     this.id = p.id;
     this.name = p.name;
     this.summary = p.summary;
+    this.creationTime = p.creationTime;
+    this.modificationTime = p.modificationTime;
     this.toValidate = p.toValidate;
     this.validated = p.validated;
   }

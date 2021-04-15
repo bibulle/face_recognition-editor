@@ -11,8 +11,19 @@
 .mat-card-header {
   height: 3.5em;
 }
+mat-card-title.mat-card-title {
+  width: 15em;
+}
 mat-card-title mat-form-field {
   margin-top: -2em;
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-left: 2em;
+  font-size: 0.8em;
 }
 
 .person_faces .mat-expansion-panel-header-description {
