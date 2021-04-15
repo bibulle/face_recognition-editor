@@ -1,5 +1,5 @@
 <div class="face" (click)="faceClick()" [ngClass]="face.validated ? 'validated' : 'to-be-validated'">
-  <img src="{{ getFaceUrl() }}" />
+  <img src="{{ getFaceUrl() }}" loading="lazy"/>
   <div class="do-not-exist" *ngIf="!face.sourceUrl">
     <mat-icon color="accent">close</mat-icon>
   </div>

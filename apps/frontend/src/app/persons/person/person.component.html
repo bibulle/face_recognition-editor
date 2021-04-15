@@ -5,6 +5,7 @@
       mat-card-avatar
       class="header-image"
       src="{{ getPersonThumbnailUrl() }}"
+      loading="lazy"
     />
     <img
       *ngIf="person.getValidated().length <= 0"
