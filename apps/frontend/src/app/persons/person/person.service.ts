@@ -35,6 +35,7 @@ export class PersonService {
   private static _sortAsked: Subject<void>;
 
   fetchAll(): Promise<Person[]> {
+    console.time('fetchAll');
     return new Promise<Person[]>((resolve, reject) => {
       this.http.get<Person[]>(this.getPersonUrl()).subscribe((t) => {
         // get real persons
@@ -90,6 +91,7 @@ export class PersonService {
 
         this.launchSort();
         resolve(PersonService._sortedPerson);
+        console.timeEnd('fetchAll');
       });
     });
   }
@@ -134,13 +136,17 @@ export class PersonService {
     face_url: string,
     askedValidated: boolean
   ) {
+    // console.time('validateFace');
+    // console.time('validateFaceReq');
     this.http
       .patch<Person>(this.getFaceUrl(person.id, validated, face_url), {
         validated: askedValidated,
       })
       .subscribe((p) => {
+        // console.timeEnd('validateFaceReq');
         person.fill(p);
         this.launchSort();
+        // console.timeEnd('validateFace');
       });
   }
   moveFace(
@@ -149,13 +155,17 @@ export class PersonService {
     face_url: string,
     askedPersonName: string
   ) {
+    // console.time('moveFace');
+    // console.time('moveFaceReq');
     this.http
       .patch<Person>(this.getFaceUrl(person.id, validated, face_url), {
         personName: askedPersonName,
       })
       .subscribe((p) => {
+        // console.timeEnd('moveFaceReq');
         person.fill(p);
         this.fetchAll();
+        // console.timeEnd('moveFace');
       });
   }
   deleteFace(person: Person, validated: boolean, face_url: string) {
@@ -172,7 +182,8 @@ export class PersonService {
   }
   sortPersons() {
     setTimeout(() => {
-      console.log(`sortPerson() : ${PersonService._sort} ...`);
+      //console.log(`sortPerson() : ${PersonService._sort} ...`);
+      // console.time('sortPersons');
       const sorted = [...PersonService._persons].sort((p1, p2) => {
         return this.compare(p1, p2);
       });
@@ -181,9 +192,15 @@ export class PersonService {
         PersonService._sortedPerson.splice(-1, 1);
       }
       sorted.forEach((p, i) => {
-        PersonService._sortedPerson[i] = p;
+        if (
+          !PersonService._sortedPerson[i] ||
+          PersonService._sortedPerson[i].id != p.id
+        ) {
+          PersonService._sortedPerson[i] = p;
+        }
       });
-      console.log(`sortPerson() : ${PersonService._sort} done`);
+      // console.timeEnd('sortPersons');
+      //console.log(`sortPerson() : ${PersonService._sort} done`);
     });
   }
   compare(p1: Person, p2: Person): number {

@@ -14,16 +14,34 @@ import {
 import { dirname, join, resolve } from 'path';
 import { Face, Person } from '@face-recognition-editor/data';
 import * as gm from 'gm';
+import * as lowdb from 'lowdb';
+import * as FileAsync from 'lowdb/adapters/FileAsync';
 
 const im = gm.subClass({ imageMagick: true });
 
 const TRAIN_DIR = process.env.TRAIN_DIR || '/train_dir';
 const TEST_DIR = process.env.TEST_DIR || '/test_dir';
 
+interface DbSchema {
+  faces: Array<Face>;
+};
+
 @Injectable()
 export class PersonService {
   private readonly logger = new Logger(PersonService.name);
+  private db: lowdb.LowdbAsync<DbSchema>;
 
+  constructor(){
+    this.initDatabase();
+    }
+    
+    private async initDatabase() {
+      const adapter = new FileAsync(join(TRAIN_DIR, "images.json"));
+      this.db = await lowdb(adapter);
+      this.db.defaults({ faces: [] }).write()
+      }
+      
+          
   /**
    * Find all persons (summaries)
    * @returns
@@ -67,6 +85,7 @@ export class PersonService {
    * @returns
    */
   async findOne(name: string): Promise<Person> {
+    // console.time('findOne '+name);
     return new Promise<Person>((resolve, reject) => {
       readdir(
         join(TRAIN_DIR, name),
@@ -105,6 +124,7 @@ export class PersonService {
               person.setValidated(await Promise.all(validated));
               person.setToValidate(await Promise.all(toValidate));
 
+              // console.timeEnd('findOne '+name);
               resolve(person);
             }
           );
@@ -142,9 +162,22 @@ export class PersonService {
    * @returns
    */
   async findOneFaceOrigin(face: string, validated: boolean): Promise<Face> {
+    // console.time('findOneFaceOrigin '+face);
     return new Promise<Face>((resolve, reject) => {
-      //this.logger.log(`findOneFaceOrigin(${face})`);
+      // this.logger.log(`findOneFaceOrigin(${face})`);
+
       const ret = new Face(face, validated);
+
+      // try to find in the db
+      // this.logger.log(`Searching : '${face}`);
+      const dbFace = this.db.get('faces').find({ url: ret.url }).value();
+      if (dbFace) {
+        // this.logger.log(`    Found : '${face}`);
+        // console.timeEnd('findOneFaceOrigin '+face);
+        return resolve(dbFace);
+      }
+      // this.logger.log(`Not found : '${face}`);
+
 
       const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
 
@@ -207,6 +240,7 @@ export class PersonService {
           ret.right = right;
           ret.top = top;
 
+          // console.time('imageMagick '+face);
           im(join(TEST_DIR, path, file_name)).size((err, size) => {
             if (err) {
               return reject(err);
@@ -214,10 +248,16 @@ export class PersonService {
             ret.width = size.width;
             ret.height = size.height;
 
+            // console.timeEnd('imageMagick '+face);
+            // console.timeEnd('findOneFaceOrigin '+face);
+            
+            this.db.get('faces').push(ret).write();
             resolve(ret);
           });
         } else {
           this.logger.warn(`File not found '${join(path, file_name)}'`);
+          // console.timeEnd('findOneFaceOrigin '+face);
+          this.db.get('faces').push(ret).write();
           resolve(ret);
         }
       }
@@ -293,6 +333,7 @@ export class PersonService {
     face: string,
     f: Face
   ): Promise<Person> {
+    // console.time('updateFace');
     return new Promise<Person>((resolve, reject) => {
       // this.logger.log(
       //   `updateFace('${name}', '${type}', '${face}', '${JSON.stringify(f)}')`
@@ -312,6 +353,7 @@ export class PersonService {
         } else {
           // face ok... check it
           if (f.validated === undefined) {
+            // console.timeEnd('updateFace');
             return resolve(this.findOne(name.toString()));
           }
           if (f.validated && type === 'validated') {
@@ -339,6 +381,7 @@ export class PersonService {
             if (err) {
               return reject(err);
             }
+            // console.timeEnd('updateFace');
             return resolve(this.findOne(name.toString()));
           });
         }
@@ -453,6 +496,7 @@ export class PersonService {
   }
 
   fillDates(person: Person) {
+    // console.time('fillDates');
     let stats = statSync(join(TRAIN_DIR, person.name));
     person.creationTime = stats.birthtime.getTime();
     person.modificationTime = stats.mtime.getTime();
@@ -463,6 +507,7 @@ export class PersonService {
     if (stats && stats.mtime.getTime() > person.modificationTime) {
       person.modificationTime = stats.mtime.getTime();
     }
+    // console.timeEnd('fillDates');
   }
   // sleep(ms) {
   //   return new Promise((resolve) => {
