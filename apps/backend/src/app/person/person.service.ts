@@ -170,7 +170,7 @@ export class PersonService {
 
       // try to find in the db
       // this.logger.log(`Searching : '${face}`);
-      const dbFace = this.db.get('faces').find({ url: ret.url }).value();
+      const dbFace = this.db.get('faces').find({ url: ret.url, validated: validated }).value();
       if (dbFace) {
         // this.logger.log(`    Found : '${face}`);
         // console.timeEnd('findOneFaceOrigin '+face);
