@@ -1,10 +1,12 @@
 import {
   Component,
   ElementRef,
+  HostListener,
   Inject,
   Input,
   NgModule,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -24,6 +26,7 @@ export interface DialogDeleteData {
   person_name: string;
   face: Face;
   faceUrl: string;
+  preset: string;
 }
 
 /* ------------------------ 
@@ -37,6 +40,7 @@ export interface DialogDeleteData {
 export class FaceComponent implements OnInit {
   @Input() person: Person;
   @Input() face: Face;
+  @ViewChild('input') inputComponent: any;
 
   constructor(
     public dialog: MatDialog,
@@ -45,6 +49,13 @@ export class FaceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {}
+
+  ngAfterViewInit() {}
+
+  @HostListener('mouseover', ['$event'])
+  handleMouseOver(event: MouseEvent) {
+    this.inputComponent.nativeElement.focus();
+  }
 
   faceClick() {
     // console.log('faceClick ' + this.person.id + ' ' + this.face);
@@ -130,7 +141,7 @@ export class FaceComponent implements OnInit {
       // console.log('The dialog was closed' + result);
     });
   }
-  moveFace(event?: any) {
+  moveFace(event?: any, preset?: string) {
     console.log('moveFace');
     if (event) event.stopPropagation();
 
@@ -139,6 +150,7 @@ export class FaceComponent implements OnInit {
         face: this.face,
         person_name: this.person.name,
         faceUrl: this.getFaceUrl(),
+        preset: preset,
       },
     });
 
@@ -153,6 +165,38 @@ export class FaceComponent implements OnInit {
         );
       }
     });
+  }
+  keyPress(event?: KeyboardEvent) {
+    //console.log(`KeyPress(${event.type} ${event.key}) : ${this.face.url}`);
+    switch (event.key) {
+      case 'd':
+        event.stopPropagation();
+        this.deleteFace();
+        break;
+      case 'v':
+        event.stopPropagation();
+        if (this.face.validated) {
+          this.unvalidateFace();
+        } else {
+          this.validateFace();
+        }
+        break;
+      case 'i':
+        event.stopPropagation();
+        this.moveFace(undefined, 'ignore');
+        break;
+      case 'u':
+        event.stopPropagation();
+        this.moveFace(undefined, 'New unknown');
+        break;
+      case 'm':
+        event.stopPropagation();
+        this.moveFace(undefined);
+        break;
+
+      default:
+        break;
+    }
   }
 
   getFaceUrl() {
@@ -268,8 +312,12 @@ export class FaceComponentMoveDialog {
   ngOnInit() {
     this.options = this._personService.getPersonsName();
 
+    if (this.data.preset) {
+      this.myControl.setValue(this.data.preset);
+    }
+
     this.filteredOptions = this.myControl.valueChanges.pipe(
-      startWith(''),
+      startWith(this.data.preset ? this.data.preset : ''),
       map((value) => (typeof value === 'string' ? value : value.name)),
       map((name) => (name ? this._filter(name) : this.options.slice()))
     );

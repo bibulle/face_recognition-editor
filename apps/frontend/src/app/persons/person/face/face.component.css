@@ -46,6 +46,12 @@
   font-size: 6em;
 }
 
+input.input {
+  opacity: 0;
+  width: 0;
+  position: absolute;
+}
+
 /* --------------------- */
 .face .face-button {
   position: absolute;

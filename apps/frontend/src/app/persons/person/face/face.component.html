@@ -1,5 +1,7 @@
 <div class="face" (click)="faceClick()" [ngClass]="face.validated ? 'validated' : 'to-be-validated'">
-  <img src="{{ getFaceUrl() }}" loading="lazy"/>
+  <img src="{{ getFaceUrl() }}" loading="lazy"
+  />
+  <input class="input" #input (keypress)="keyPress($event)">
   <div class="do-not-exist" *ngIf="!face.sourceUrl">
     <mat-icon color="accent">close</mat-icon>
   </div>

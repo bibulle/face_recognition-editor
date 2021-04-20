@@ -24,24 +24,23 @@ const TEST_DIR = process.env.TEST_DIR || '/test_dir';
 
 interface DbSchema {
   faces: Array<Face>;
-};
+}
 
 @Injectable()
 export class PersonService {
   private readonly logger = new Logger(PersonService.name);
   private db: lowdb.LowdbAsync<DbSchema>;
 
-  constructor(){
+  constructor() {
     this.initDatabase();
-    }
-    
-    private async initDatabase() {
-      const adapter = new FileAsync(join(TRAIN_DIR, "images.json"));
-      this.db = await lowdb(adapter);
-      this.db.defaults({ faces: [] }).write()
-      }
-      
-          
+  }
+
+  private async initDatabase() {
+    const adapter = new FileAsync(join(TRAIN_DIR, 'images.json'));
+    this.db = await lowdb(adapter);
+    this.db.defaults({ faces: [] }).write();
+  }
+
   /**
    * Find all persons (summaries)
    * @returns
@@ -87,6 +86,7 @@ export class PersonService {
   async findOne(name: string): Promise<Person> {
     // console.time('findOne '+name);
     return new Promise<Person>((resolve, reject) => {
+      
       readdir(
         join(TRAIN_DIR, name),
         { withFileTypes: true },
@@ -170,14 +170,16 @@ export class PersonService {
 
       // try to find in the db
       // this.logger.log(`Searching : '${face}`);
-      const dbFace = this.db.get('faces').find({ url: ret.url, validated: validated }).value();
+      const dbFace = this.db
+        .get('faces')
+        .find({ url: ret.url, validated: validated })
+        .value();
       if (dbFace) {
         // this.logger.log(`    Found : '${face}`);
         // console.timeEnd('findOneFaceOrigin '+face);
         return resolve(dbFace);
       }
       // this.logger.log(`Not found : '${face}`);
-
 
       const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
 
@@ -250,7 +252,7 @@ export class PersonService {
 
             // console.timeEnd('imageMagick '+face);
             // console.timeEnd('findOneFaceOrigin '+face);
-            
+
             this.db.get('faces').push(ret).write();
             resolve(ret);
           });
@@ -437,6 +439,18 @@ export class PersonService {
 
       const srcPath = this.findOneFaceFullPath(name, type, face);
 
+      if (personName.toLocaleLowerCase() == 'new unknown') {
+        // find the first free "unknown"
+        let cpt = 1;
+        let newName = `Unknown_${this.pad(cpt, 6)}`;
+        while (this.isFileExist(TRAIN_DIR, newName)) {
+          cpt++;
+          newName = `Unknown_${this.pad(cpt, 6)}`;
+        }
+        personName = newName;
+        this.logger.log(`moveFace '${name}' -> '${personName}')`);
+      }
+
       stat(srcPath, async (err, stats) => {
         if (err && err.code === 'ENOENT') {
           // file not found... error
@@ -514,4 +528,10 @@ export class PersonService {
   //     setTimeout(resolve, ms);
   //   });
   // }
+
+  pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = '0' + num;
+    return num;
+  }
 }
