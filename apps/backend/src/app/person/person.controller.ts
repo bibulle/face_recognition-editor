@@ -10,7 +10,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PersonService } from './person.service';
-import { Face, Person } from '@face-recognition-editor/data';
+import { Face, Person, Progress } from '@face-recognition-editor/data';
 import { Res } from '@nestjs/common';
 
 @Controller('person')
@@ -20,14 +20,22 @@ export class PersonController {
   constructor(private readonly personService: PersonService) {}
 
   /**
+   * Get recognition progress
+   * @returns the progress
+   */
+   @Get('progress')
+   async getProgress(): Promise<Progress> {
+     return this.personService.getProgress();
+   }
+  /**
    * Get all persons
    * @returns all the persons
    */
-  @Get()
-  async findAll(): Promise<Person[]> {
-    return this.personService.findAll();
-  }
-
+   @Get()
+   async findAll(): Promise<Person[]> {
+     return this.personService.findAll();
+   }
+  
   /**
    * Get a full person (with faces)
    * @param id the person Id

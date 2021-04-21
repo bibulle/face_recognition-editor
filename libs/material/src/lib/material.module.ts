@@ -18,6 +18,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MdePopoverModule } from '@material-extended/mde';
 
 @NgModule({
   imports: [
@@ -39,7 +42,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatDialogModule,
     MatSnackBarModule,
     MatAutocompleteModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatGridListModule,
+    MdePopoverModule,
   ],
   exports: [
     FlexLayoutModule,
@@ -60,7 +66,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatDialogModule,
     MatSnackBarModule,
     MatAutocompleteModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatGridListModule,
+    MdePopoverModule,
   ],
 })
 export class MaterialModule {}

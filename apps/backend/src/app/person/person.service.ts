@@ -10,17 +10,22 @@ import {
   mkdir,
   rmdirSync,
   mkdirSync,
+  readFile,
 } from 'fs';
 import { dirname, join, resolve } from 'path';
-import { Face, Person } from '@face-recognition-editor/data';
+import { Face, Person, Progress } from '@face-recognition-editor/data';
 import * as gm from 'gm';
 import * as lowdb from 'lowdb';
 import * as FileAsync from 'lowdb/adapters/FileAsync';
+import { rejects } from 'node:assert';
 
 const im = gm.subClass({ imageMagick: true });
 
-const TRAIN_DIR = process.env.TRAIN_DIR || '/train_dir';
-const TEST_DIR = process.env.TEST_DIR || '/test_dir';
+const TEST_DIR_DEFAULT = '/test_dir';
+const TRAIN_DIR_DEFAULT = '/train_dir';
+
+const TRAIN_DIR = process.env.TRAIN_DIR || TRAIN_DIR_DEFAULT;
+const TEST_DIR = process.env.TEST_DIR || TEST_DIR_DEFAULT;
 
 interface DbSchema {
   faces: Array<Face>;
@@ -39,6 +44,33 @@ export class PersonService {
     const adapter = new FileAsync(join(TRAIN_DIR, 'images.json'));
     this.db = await lowdb(adapter);
     this.db.defaults({ faces: [] }).write();
+  }
+
+
+  getProgress(): Promise<Progress> {
+    return new Promise<Progress>((resolve, reject) => {
+      readFile(join(TRAIN_DIR, 'progress.json'), (err, raw_data) => {
+        if (err) {
+          this.logger.log(raw_data);
+          return reject(err);
+        }
+        let ret: Progress = JSON.parse(raw_data.toString('utf8'));
+
+        //this.logger.log(ret);
+
+        ret.lastStartTime = new Date(ret.lastStartTime);
+        if (ret.nameImageCurrent.startsWith(TEST_DIR_DEFAULT)) {
+          ret.nameImageCurrent = ret.nameImageCurrent.replace(TEST_DIR_DEFAULT+'/', '');
+        }
+        if (ret.nameImageMax.startsWith(TEST_DIR_DEFAULT)) {
+          ret.nameImageMax = ret.nameImageMax.replace(TEST_DIR_DEFAULT+'/', '');
+        }
+        if (!ret.newFaces.endsWith('.jpg')) {
+          ret.newFaces = ret.newFaces + '.jpg';
+        }
+        resolve(ret);
+      });
+    })
   }
 
   /**

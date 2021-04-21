@@ -40,6 +40,7 @@
     "@angular/platform-browser": "^11.2.9",
     "@angular/platform-browser-dynamic": "^11.2.9",
     "@angular/router": "^11.2.9",
+    "@material-extended/mde": "^3.0.3",
     "@nestjs/common": "^7.0.0",
     "@nestjs/core": "^7.0.0",
     "@nestjs/platform-express": "^7.0.0",

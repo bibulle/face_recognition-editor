@@ -62,4 +62,24 @@ export class Face {
     this.validated = validated;
   }
 }
+
+export class Progress {
+    countImagesCurrent: number;
+    countImagesMax: number;
+    countImagesTotal: number;
+    nameImageCurrent: string;
+    nameImageMax: string;
+    newFacesCount: number;
+    newFaces: string;
+    newFacesName: string;
+    newFacesValidated: boolean;
+    lastStartTime: Date;
+
+    constructor() {
+      this.countImagesCurrent = 0;
+      this.countImagesMax = 0;
+      this.countImagesTotal = 0;
+      this.newFacesCount = 0;
+    }
+}
  

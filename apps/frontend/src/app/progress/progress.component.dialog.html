@@ -1,0 +1,81 @@
+<mat-card>
+  <mat-card-title>Progress</mat-card-title>
+  <mat-card-content class="progress-content">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Recognition </mat-panel-title>
+        <mat-panel-description
+          >Finish {{ getETA() | deltaDate }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <div class="label">Start:</div>
+        <div class="info">{{ progress.lastStartTime | deltaDate }}</div>
+        <div class="label">ETA:</div>
+        <div class="info">{{ getETA() | date: 'medium' }}</div>
+      </ng-template>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Current image </mat-panel-title>
+        <mat-panel-description>
+          {{ progress.countImagesCurrent }} / {{ progress.countImagesTotal }} (
+          {{ (100 * progress.countImagesCurrent) / progress.countImagesTotal |
+          number: '1.0-0' }} % )
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <div class="label">Name:</div>
+        <div class="info">{{ progress.nameImageCurrent }}</div>
+        <div class="label">&nbsp;</div>
+        <img
+          class="info"
+          *ngIf="progress.nameImageCurrent"
+          src="{{getImageUrl(progress.nameImageCurrent)}}"
+        />
+      </ng-template>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Max image </mat-panel-title>
+        <mat-panel-description>
+          {{ progress.countImagesMax }} / {{ progress.countImagesTotal }} (
+          {{ (100 * progress.countImagesMax) / progress.countImagesTotal |
+          number: '1.0-0' }} % )
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <span class="label">Name:</span>
+        <span class="info">{{ progress.nameImageMax }}</span>
+        <span class="label">&nbsp;</span>
+        <img
+          class="info"
+          *ngIf="progress.nameImageMax"
+          src="{{getImageUrl(progress.nameImageMax)}}"
+        />
+      </ng-template>
+    </mat-expansion-panel>
+    <mat-expansion-panel [hideToggle]="progress.newFacesCount === 0">
+      <mat-expansion-panel-header>
+        <mat-panel-title> New face </mat-panel-title>
+        <mat-panel-description *ngIf="progress.newFacesCount === 0">
+          No new face found
+        </mat-panel-description>
+        <mat-panel-description *ngIf="progress.newFacesCount !== 0">
+          {{ progress.newFacesCount }} found
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent *ngIf="progress.newFacesCount !== 0">
+        <div class="label">Last found:</div>
+        <div class="info">{{ progress.newFacesName }}</div>
+        <div class="label">&nbsp;</div>
+        <div class="info">{{ progress.newFaces }}</div>
+          <div class="label">&nbsp;</div>
+        <img
+          *ngIf="progress.newFaces"
+          src="{{getFaceUrl()}}"
+        />
+      </ng-template>
+    </mat-expansion-panel>
+  </mat-card-content>
+</mat-card>

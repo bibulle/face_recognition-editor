@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Person } from '@face-recognition-editor/data';
+import { Person, Progress } from '@face-recognition-editor/data';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { ProgressService } from '../../progress/progress.service';
 import { Sort, SortPickerService } from '../../sort-picker/sort-picker.service';
 
 @Injectable({
@@ -11,7 +12,8 @@ import { Sort, SortPickerService } from '../../sort-picker/sort-picker.service';
 export class PersonService {
   constructor(
     private http: HttpClient,
-    private _sortPicketService: SortPickerService
+    private _sortPicketService: SortPickerService,
+    private _progressService: ProgressService
   ) {
     this._sortPicketService.getSortObservable().subscribe((s) => {
       PersonService._sort = s;
@@ -26,6 +28,16 @@ export class PersonService {
         },
       });
     }
+
+    this._progressService.getSortObservable().subscribe((p) => {
+      if (p.newFacesCount !== PersonService._progress.newFacesCount) {
+        setTimeout(() => {
+          this.fetchAll();
+        })
+      }
+      PersonService._progress = p;
+    })
+
   }
 
   private static _persons: Person[] = [];
@@ -33,6 +45,8 @@ export class PersonService {
   private static _sort: Sort;
 
   private static _sortAsked: Subject<void>;
+
+  private static _progress: Progress = new Progress();
 
   fetchAll(): Promise<Person[]> {
     console.time('fetchAll');
@@ -265,4 +279,5 @@ export class PersonService {
   getFaceSrcUrl(face_source_url: string): string {
     return `/api/person/face_source/${face_source_url}`;
   }
+
 }

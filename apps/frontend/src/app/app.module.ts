@@ -7,6 +7,8 @@ import { AppComponent } from './app.component';
 import { PersonsModule } from './persons/persons.component';
 import { MaterialModule } from '@face-recognition-editor/material';
 import { SortPickerModule } from './sort-picker/sort-picker.component';
+import { ProgressModule } from './progress/progress.component';
+import { DeltaDatePipe } from './pipes/delta-date.pipe';
 
 
 @NgModule({
@@ -19,7 +21,8 @@ import { SortPickerModule } from './sort-picker/sort-picker.component';
     HttpClientModule,
     MaterialModule,
     PersonsModule,
-    SortPickerModule
+    SortPickerModule,
+    ProgressModule
   ],
   providers: [],
   bootstrap: [AppComponent],

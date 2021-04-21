@@ -1,0 +1,42 @@
+:host {
+    flex: 2 1 auto;
+    flex-direction: column;
+}
+.face {
+    font-size: 0.8em;
+}
+.progress-bar-current {
+    margin-top: -4px;
+}
+
+.progress-content {
+    display: flex;
+    flex-direction: column;
+    width: 40em;
+}
+
+.progress-content mat-panel-title {
+    font-size: 1.2em;
+    line-height: 1em;
+    flex: 1 1 20%
+}
+.progress-content mat-panel-description {
+    flex: 1 1 50%
+}
+.progress-content .content {
+    padding-left: 1em;
+    display: flex;
+    flex-wrap: wrap;
+}
+.progress-content .label {
+    width: 20%;
+    display: inline-flex;
+}
+.progress-content .info {
+    width: 80%;
+    display: inline-flex;
+}
+.progress-content img {
+    flex: 0 1 80%;
+    width: 6em;
+}

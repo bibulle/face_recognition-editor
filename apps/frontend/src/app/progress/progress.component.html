@@ -1,0 +1,32 @@
+<mat-progress-bar
+  *ngIf="progress.countImagesTotal != 0"
+  class="progress-bar-max"
+  color="accent"
+  mode="determinate"
+  [value]="(100 * progress.countImagesMax) / progress.countImagesTotal"
+  matTooltip="{{ progress.countImagesCurrent }} ({{
+    progress.countImagesMax
+  }}) / {{ progress.countImagesTotal }}"
+  (click)="showDialog()"
+>
+</mat-progress-bar>
+<mat-progress-bar
+  *ngIf="progress.countImagesTotal != 0"
+  class="progress-bar-current"
+  color="accent"
+  mode="determinate"
+  [value]="(100 * progress.countImagesCurrent) / progress.countImagesTotal"
+  matTooltip="{{ progress.countImagesCurrent }} ({{
+    progress.countImagesMax
+  }}) / {{ progress.countImagesTotal }}"
+  (click)="showDialog()"
+>
+</mat-progress-bar>
+<span
+  class="face"
+  *ngIf="progress.newFacesCount != 0"
+  matTooltip="{{ progress.newFacesName }} ({{ progress.newFaces }})"
+  (click)="showDialog()"
+>
+  {{ progress.newFacesCount }} new faces
+</span>
