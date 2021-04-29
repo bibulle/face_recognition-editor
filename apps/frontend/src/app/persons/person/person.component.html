@@ -1,11 +1,16 @@
 <mat-card>
   <mat-card-header>
     <img
-      *ngIf="person.getValidated().length > 0"
+      *ngIf="getPersonThumbnail()"
       mat-card-avatar
       class="header-image"
       src="{{ getPersonThumbnailUrl() }}"
       loading="lazy"
+      [ngClass]="{
+        'orientation-bottom-right': getPersonThumbnail().orientation == 3,
+        'orientation-right-top': getPersonThumbnail().orientation == 6,
+        'orientation-left-bottom': getPersonThumbnail().orientation == 8
+      }"
     />
     <img
       *ngIf="person.getValidated().length <= 0"
@@ -33,11 +38,9 @@
     <mat-card-subtitle>&nbsp;</mat-card-subtitle>
     <div class="description">
       <span>Creation : {{ person.creationTime | date: 'medium' }}</span>
-      <span
-        >Modification : {{ person.modificationTime | date: 'medium' }}</span
-      >
+      <span>Modification : {{ person.modificationTime | date: 'medium' }}</span>
     </div>
-</mat-card-header>
+  </mat-card-header>
   <mat-card-content>
     <mat-accordion class="person_faces">
       <mat-expansion-panel>
@@ -57,14 +60,14 @@
           </mat-panel-description>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
-        <face-recognition-editor-face
-          *ngFor="let f of person.getValidated()"
-          class="face"
-          [person]="person"
-          [face]="f"
-        >
-        </face-recognition-editor-face>
-      </ng-template>
+          <face-recognition-editor-face
+            *ngFor="let f of person.getValidated()"
+            class="face"
+            [person]="person"
+            [face]="f"
+          >
+          </face-recognition-editor-face>
+        </ng-template>
       </mat-expansion-panel>
       <mat-expansion-panel *ngIf="person.getToValidate().length > 0">
         <mat-expansion-panel-header>
@@ -82,14 +85,14 @@
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
           <face-recognition-editor-face
-          *ngFor="let f of person.getToValidate()"
-          class="face"
-          [person]="person"
-          [face]="f"
-        >
-        </face-recognition-editor-face>
-      </ng-template>
-    </mat-expansion-panel>
+            *ngFor="let f of person.getToValidate()"
+            class="face"
+            [person]="person"
+            [face]="f"
+          >
+          </face-recognition-editor-face>
+        </ng-template>
+      </mat-expansion-panel>
     </mat-accordion>
   </mat-card-content>
 </mat-card>

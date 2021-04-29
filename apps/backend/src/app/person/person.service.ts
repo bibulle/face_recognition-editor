@@ -13,11 +13,15 @@ import {
   readFile,
 } from 'fs';
 import { dirname, join, resolve } from 'path';
-import { Face, Person, Progress } from '@face-recognition-editor/data';
+import {
+  Face,
+  Orientation,
+  Person,
+  Progress,
+} from '@face-recognition-editor/data';
 import * as gm from 'gm';
 import * as lowdb from 'lowdb';
 import * as FileAsync from 'lowdb/adapters/FileAsync';
-import { rejects } from 'node:assert';
 
 const im = gm.subClass({ imageMagick: true });
 
@@ -46,7 +50,6 @@ export class PersonService {
     this.db.defaults({ faces: [] }).write();
   }
 
-
   getProgress(): Promise<Progress> {
     return new Promise<Progress>((resolve, reject) => {
       readFile(join(TRAIN_DIR, 'progress.json'), (err, raw_data) => {
@@ -60,17 +63,23 @@ export class PersonService {
 
         ret.lastStartTime = new Date(ret.lastStartTime);
         if (ret.nameImageCurrent.startsWith(TEST_DIR_DEFAULT)) {
-          ret.nameImageCurrent = ret.nameImageCurrent.replace(TEST_DIR_DEFAULT+'/', '');
+          ret.nameImageCurrent = ret.nameImageCurrent.replace(
+            TEST_DIR_DEFAULT + '/',
+            ''
+          );
         }
         if (ret.nameImageMax.startsWith(TEST_DIR_DEFAULT)) {
-          ret.nameImageMax = ret.nameImageMax.replace(TEST_DIR_DEFAULT+'/', '');
+          ret.nameImageMax = ret.nameImageMax.replace(
+            TEST_DIR_DEFAULT + '/',
+            ''
+          );
         }
         if (!ret.newFaces.endsWith('.jpg')) {
           ret.newFaces = ret.newFaces + '.jpg';
         }
         resolve(ret);
       });
-    })
+    });
   }
 
   /**
@@ -118,7 +127,6 @@ export class PersonService {
   async findOne(name: string): Promise<Person> {
     // console.time('findOne '+name);
     return new Promise<Person>((resolve, reject) => {
-      
       readdir(
         join(TRAIN_DIR, name),
         { withFileTypes: true },
@@ -213,8 +221,8 @@ export class PersonService {
       }
       // this.logger.log(`Not found : '${face}`);
 
+      // Retrieve face parametrers from face name
       const faceParser = /^(.*)[.]([^ ]*) [(]([0-9]*), ([0-9]*), ([0-9]*), ([0-9]*)[)][.]jpg$/;
-
       if (!faceParser.test(face)) {
         this.logger.error(`face not correct !!! (${face})`);
         reject();
@@ -275,19 +283,47 @@ export class PersonService {
           ret.top = top;
 
           // console.time('imageMagick '+face);
-          im(join(TEST_DIR, path, file_name)).size((err, size) => {
-            if (err) {
-              return reject(err);
-            }
-            ret.width = size.width;
-            ret.height = size.height;
+          const imgPath = join(TEST_DIR, path, file_name);
+          Promise.all([
+            new Promise<void>((resolve, reject) => {
+              im(imgPath).orientation((err, orientation) => {
+                if (err) {
+                  return reject(err);
+                }
 
-            // console.timeEnd('imageMagick '+face);
-            // console.timeEnd('findOneFaceOrigin '+face);
+                ret.orientation = Orientation[orientation];
+                // this.logger.log(`${imgPath} : ${ret.orientation}`);
 
-            this.db.get('faces').push(ret).write();
-            resolve(ret);
-          });
+                // if ()
+
+                resolve();
+              });
+            }),
+            new Promise<void>((resolve, reject) => {
+              im(imgPath).size((err, size) => {
+                if (err) {
+                  return reject(err);
+                }
+
+                ret.width = size.width;
+                ret.height = size.height;
+                // this.logger.log(`${imgPath} : ${JSON.stringify(size)} `);
+                resolve();
+              });
+            }),
+          ])
+            .then(() => {
+              // this.logger.log(`${imgPath} : ${ret.orientation} ${ret.width}x${ret.height}`);
+              this.db.get('faces').push(ret).write();
+              resolve(ret);
+            })
+            .catch((err) => {
+              reject(err);
+            })
+            .finally(() => {
+              // console.timeEnd('imageMagick '+face);
+              // console.timeEnd('findOneFaceOrigin '+face);
+            });
         } else {
           this.logger.warn(`File not found '${join(path, file_name)}'`);
           // console.timeEnd('findOneFaceOrigin '+face);

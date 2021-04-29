@@ -30,6 +30,17 @@ $theme: mat-light-theme(
   overflow: visible;
 }
 
+.orientation-bottom-right {
+  transform: rotate(180deg);
+}
+.orientation-right-top {
+  transform: rotate(90deg);
+}
+.orientation-left-bottom {
+  transform: rotate(-90deg);
+}
+
+
 .accent-color {
   color: mat-color($accent) !important;
 }

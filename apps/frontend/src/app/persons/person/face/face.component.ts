@@ -12,7 +12,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserModule } from '@angular/platform-browser';
-import { Face, Person } from '@face-recognition-editor/data';
+import { Face, Orientation, Person } from '@face-recognition-editor/data';
 import { MaterialModule } from '@face-recognition-editor/material';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -249,31 +249,83 @@ export class FaceComponentDialog {
     if (!this.imageHeight) {
       return 0;
     }
-    return (this.imageHeight * this.data.face.top) / this.data.face.height;
+    switch (this.data.face.orientation) {
+      case Orientation.RightTop:
+        return this.imageHeight * (this.data.face.left / this.data.face.width);
+      case Orientation.LeftBottom:
+        return (
+          this.imageHeight * (1 - this.data.face.right / this.data.face.width)
+        );
+      case Orientation.BottomRight:
+        return (
+          this.imageHeight * (1 - this.data.face.bottom / this.data.face.height)
+        );
+      case Orientation.TopLeft:
+      default:
+        return this.imageHeight * (this.data.face.top / this.data.face.height);
+    }
   }
   getFaceHeight() {
     if (!this.imageHeight) {
       return 0;
     }
-    return (
-      (this.imageHeight * (this.data.face.bottom - this.data.face.top)) /
-      this.data.face.height
-    );
+    switch (this.data.face.orientation) {
+      case Orientation.RightTop:
+      case Orientation.LeftBottom:
+        return (
+          this.imageHeight *
+          ((this.data.face.right - this.data.face.left) / this.data.face.width)
+        );
+
+      case Orientation.BottomRight:
+      case Orientation.TopLeft:
+      default:
+        return (
+          this.imageHeight *
+          ((this.data.face.bottom - this.data.face.top) / this.data.face.height)
+        );
+    }
   }
   getFaceLeft() {
     if (!this.imageWidth) {
       return 0;
     }
-    return (this.imageWidth * this.data.face.left) / this.data.face.width;
+    switch (this.data.face.orientation) {
+      case Orientation.RightTop:
+        return (
+          this.imageWidth * (1 - this.data.face.bottom / this.data.face.height)
+        );
+      case Orientation.LeftBottom:
+        return this.imageWidth * (this.data.face.top / this.data.face.height);
+      case Orientation.BottomRight:
+        return (
+          this.imageWidth * (1 - this.data.face.right / this.data.face.width)
+        );
+      case Orientation.TopLeft:
+      default:
+        return this.imageWidth * (this.data.face.left / this.data.face.width);
+    }
   }
   getFaceWidth() {
     if (!this.imageWidth) {
       return 0;
     }
-    return (
-      (this.imageWidth * (this.data.face.right - this.data.face.left)) /
-      this.data.face.width
-    );
+    switch (this.data.face.orientation) {
+      case Orientation.RightTop:
+      case Orientation.LeftBottom:
+        return (
+          this.imageHeight *
+          ((this.data.face.bottom - this.data.face.top) / this.data.face.height)
+        );
+
+      case Orientation.BottomRight:
+      case Orientation.TopLeft:
+      default:
+        return (
+          this.imageWidth *
+          ((this.data.face.right - this.data.face.left) / this.data.face.width)
+        );
+    }
   }
 }
 

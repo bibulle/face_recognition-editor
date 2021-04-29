@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Input, NgModule, OnDestroy, OnInit } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Person } from '@face-recognition-editor/data';
+import { Face, Person } from '@face-recognition-editor/data';
 import { MaterialModule } from '@face-recognition-editor/material';
 import { Subject, Subscription} from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -46,8 +46,15 @@ export class PersonComponent implements OnInit, OnDestroy {
     }
   }
 
+  getPersonThumbnail(): Face {
+    if (this.person.getValidated() && this.person.getValidated().length > 0) {
+      return this.person.getValidated()[0];
+    } else {
+      return undefined
+    }
+  }
   getPersonThumbnailUrl() {
-    return this._personService.getFaceUrl(this.person.id, true, this.person.getValidated()[0].url);
+    return this._personService.getFaceUrl(this.person.id, true, this.getPersonThumbnail().url);
   }
 
   ngOnDestroy() {

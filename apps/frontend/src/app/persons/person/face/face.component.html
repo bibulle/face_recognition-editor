@@ -1,7 +1,18 @@
-<div class="face" (click)="faceClick()" [ngClass]="face.validated ? 'validated' : 'to-be-validated'">
-  <img src="{{ getFaceUrl() }}" loading="lazy"
+<div
+  class="face"
+  (click)="faceClick()"
+  [ngClass]="face.validated ? 'validated' : 'to-be-validated'"
+>
+  <img
+    src="{{ getFaceUrl() }}"
+    loading="lazy"
+    [ngClass]="{
+      'orientation-bottom-right': face.orientation == 3,
+      'orientation-right-top': face.orientation == 6,
+      'orientation-left-bottom': face.orientation == 8
+    }"
   />
-  <input class="input" #input (keypress)="keyPress($event)">
+  <input class="input" #input (keypress)="keyPress($event)"/>
   <div class="do-not-exist" *ngIf="!face.sourceUrl">
     <mat-icon color="accent">close</mat-icon>
   </div>

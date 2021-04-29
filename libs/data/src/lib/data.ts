@@ -40,7 +40,6 @@ export class Person {
     this.toValidate = p.toValidate;
     this.validated = p.validated;
   }
-
 }
 
 export class Face {
@@ -56,6 +55,7 @@ export class Face {
 
   width: number;
   height: number;
+  orientation: Orientation;
 
   constructor(url: string, validated: boolean) {
     this.url = encodeURIComponent(url);
@@ -63,23 +63,33 @@ export class Face {
   }
 }
 
-export class Progress {
-    countImagesCurrent: number;
-    countImagesMax: number;
-    countImagesTotal: number;
-    nameImageCurrent: string;
-    nameImageMax: string;
-    newFacesCount: number;
-    newFaces: string;
-    newFacesName: string;
-    newFacesValidated: boolean;
-    lastStartTime: Date;
-
-    constructor() {
-      this.countImagesCurrent = 0;
-      this.countImagesMax = 0;
-      this.countImagesTotal = 0;
-      this.newFacesCount = 0;
-    }
+export enum Orientation {
+  TopLeft = 1,
+  TopRight = 2,
+  BottomRight = 3,
+  BottomLeft = 4,
+  LeftTop = 5,
+  RightTop = 6,
+  RightBottom = 7,
+  LeftBottom = 8,
 }
- 
+
+export class Progress {
+  countImagesCurrent: number;
+  countImagesMax: number;
+  countImagesTotal: number;
+  nameImageCurrent: string;
+  nameImageMax: string;
+  newFacesCount: number;
+  newFaces: string;
+  newFacesName: string;
+  newFacesValidated: boolean;
+  lastStartTime: Date;
+
+  constructor() {
+    this.countImagesCurrent = 0;
+    this.countImagesMax = 0;
+    this.countImagesTotal = 0;
+    this.newFacesCount = 0;
+  }
+}
