@@ -4,7 +4,7 @@
   color="accent"
   mode="determinate"
   [value]="(100 * progress.countImagesMax) / progress.countImagesTotal"
-  matTooltip="{{ progress.countImagesCurrent }} ({{
+  matTooltip="{{ progress.status }} {{ progress.countImagesCurrent }} ({{
     progress.countImagesMax
   }}) / {{ progress.countImagesTotal }}"
   (click)="showDialog()"
@@ -16,7 +16,7 @@
   color="accent"
   mode="determinate"
   [value]="(100 * progress.countImagesCurrent) / progress.countImagesTotal"
-  matTooltip="{{ progress.countImagesCurrent }} ({{
+  matTooltip="{{ progress.status }} {{ progress.countImagesCurrent }} ({{
     progress.countImagesMax
   }}) / {{ progress.countImagesTotal }}"
   (click)="showDialog()"

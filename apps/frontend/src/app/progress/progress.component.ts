@@ -42,6 +42,7 @@ export class ProgressComponent implements OnInit {
       this.progress.newFacesName=p.newFacesName
       this.progress.newFacesValidated=p.newFacesValidated;
       this.progress.lastStartTime=p.lastStartTime;
+      this.progress.status=p.status;
 
       // if (!this.dialogRef) this.showDialog();
     });
