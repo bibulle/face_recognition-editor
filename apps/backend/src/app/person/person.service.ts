@@ -654,13 +654,25 @@ export class PersonService {
               if (!faceValidated[f]) {
                 faceValidated[f] = p;
               } else {
-                this.logger.error(
-                  `Validated : ${f} is in two person : ${faceValidated[f]} and ${p}`
-                );
+                if (p === 'ignore') {
+                  unlinkSync(join(TRAIN_DIR, p, f));
+                  this.logger.warn(
+                    `Validate : '${f}' remove from '${p}' (is validated in '${faceValidated[f]}')`
+                  );
+                } else if (faceValidated[f] === 'ignore') {
+                  unlinkSync(join(TRAIN_DIR, faceValidated[f], f));
+                  this.logger.warn(
+                    `Validate : '${f}' remove from '${faceValidated[f]}' (is validated in '${p}')`
+                  );
+                } else {
+                  this.logger.error(
+                    `Validated : ${f} is in two person : ${faceValidated[f]} and ${p}`
+                  );
+                }
               }
             });
         });
-        
+
         // foreach unvalidated face
         persons.forEach((p) => {
           if (this.isFileExist(TRAIN_DIR, join(p, 'tovalidate'))) {
@@ -678,19 +690,29 @@ export class PersonService {
               .forEach((f) => {
                 if (faceValidated[f]) {
                   unlinkSync(join(TRAIN_DIR, p, 'tovalidate', f));
-                  this.logger.warn(`To validate : '${f}' remove from '${p}' (is validated in '${faceValidated[f]}')`)
-              } else if (!faceToBeValidate[f]) {
+                  this.logger.warn(
+                    `To validate : '${f}' remove from '${p}' (is validated in '${faceValidated[f]}')`
+                  );
+                } else if (!faceToBeValidate[f]) {
                   faceToBeValidate[f] = p;
                 } else {
                   const statNew = statSync(join(TRAIN_DIR, p, 'tovalidate', f));
-                  const statOld = statSync(join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f));
+                  const statOld = statSync(
+                    join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f)
+                  );
 
                   if (statNew.ctime > statOld.ctime) {
-                    unlinkSync(join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f));
-                    this.logger.warn(`To validate : '${f}' remove from '${faceToBeValidate[f]}' (is in '${p}')`)
+                    unlinkSync(
+                      join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f)
+                    );
+                    this.logger.warn(
+                      `To validate : '${f}' remove from '${faceToBeValidate[f]}' (is in '${p}')`
+                    );
                   } else {
                     unlinkSync(join(TRAIN_DIR, p, 'tovalidate', f));
-                    this.logger.warn(`To validate : '${f}' remove from '${p}' (is in '${faceToBeValidate[f]}')`)
+                    this.logger.warn(
+                      `To validate : '${f}' remove from '${p}' (is in '${faceToBeValidate[f]}')`
+                    );
                   }
                 }
               });
