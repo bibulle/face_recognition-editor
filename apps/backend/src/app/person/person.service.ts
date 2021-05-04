@@ -2,11 +2,13 @@ import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import {
   readdir,
+  readdirSync,
   stat,
   statSync,
   rename,
   accessSync,
   unlink,
+  unlinkSync,
   mkdir,
   rmdirSync,
   mkdirSync,
@@ -42,6 +44,11 @@ export class PersonService {
 
   constructor() {
     this.initDatabase();
+
+    setInterval(() => {
+      this.cleanTrainedDataSynchronize();
+    }, 60000);
+    this.cleanTrainedDataSynchronize();
   }
 
   private async initDatabase() {
@@ -602,4 +609,116 @@ export class PersonService {
     while (num.length < size) num = '0' + num;
     return num;
   }
+
+  cleanTrainedData(): Promise<void> {
+    //this.logger.log('cleanTrainedData');
+    return new Promise<void>((resolve, reject) => {
+      // read all persone
+      readdir(TRAIN_DIR, { withFileTypes: true }, async (err, files) => {
+        if (err) {
+          this.logger.error(err);
+          return;
+        }
+
+        const faceValidated = {};
+        const faceToBeValidate = {};
+        const persons = files
+          .filter((d) => {
+            return d.isDirectory();
+          })
+          .filter((d) => {
+            try {
+              rmdirSync(join(TRAIN_DIR, d.name, 'tovalidate'));
+            } catch (error) {}
+            try {
+              rmdirSync(join(TRAIN_DIR, d.name));
+            } catch (error) {}
+            return this.isFileExist(TRAIN_DIR, d.name);
+          })
+          .map((d) => {
+            return d.name;
+          });
+
+        // Foreach validated face
+        persons.forEach((p) => {
+          files = readdirSync(join(TRAIN_DIR, p), { withFileTypes: true });
+
+          files
+            .filter((f) => {
+              return f.isFile() && !f.name.startsWith('.');
+            })
+            .map((d) => {
+              return d.name;
+            })
+            .forEach((f) => {
+              if (!faceValidated[f]) {
+                faceValidated[f] = p;
+              } else {
+                this.logger.error(
+                  `Validated : ${f} is in two person : ${faceValidated[f]} and ${p}`
+                );
+              }
+            });
+        });
+        
+        // foreach unvalidated face
+        persons.forEach((p) => {
+          if (this.isFileExist(TRAIN_DIR, join(p, 'tovalidate'))) {
+            files = readdirSync(join(TRAIN_DIR, p, 'tovalidate'), {
+              withFileTypes: true,
+            });
+
+            files
+              .filter((f) => {
+                return f.isFile() && !f.name.startsWith('.');
+              })
+              .map((d) => {
+                return d.name;
+              })
+              .forEach((f) => {
+                if (faceValidated[f]) {
+                  unlinkSync(join(TRAIN_DIR, p, 'tovalidate', f));
+                  this.logger.warn(`To validate : '${f}' remove from '${p}' (is validated in '${faceValidated[f]}')`)
+              } else if (!faceToBeValidate[f]) {
+                  faceToBeValidate[f] = p;
+                } else {
+                  const statNew = statSync(join(TRAIN_DIR, p, 'tovalidate', f));
+                  const statOld = statSync(join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f));
+
+                  if (statNew.ctime > statOld.ctime) {
+                    unlinkSync(join(TRAIN_DIR, faceToBeValidate[f], 'tovalidate', f));
+                    this.logger.warn(`To validate : '${f}' remove from '${faceToBeValidate[f]}' (is in '${p}')`)
+                  } else {
+                    unlinkSync(join(TRAIN_DIR, p, 'tovalidate', f));
+                    this.logger.warn(`To validate : '${f}' remove from '${p}' (is in '${faceToBeValidate[f]}')`)
+                  }
+                }
+              });
+          }
+        });
+
+        //this.logger.log('cleanTrainedData done');
+        resolve();
+      });
+    });
+  }
+  notConcurrent = <T>(proc: () => PromiseLike<T>) => {
+    let inFlight: Promise<T> | false = false;
+
+    return () => {
+      if (!inFlight) {
+        inFlight = (async () => {
+          try {
+            return await proc();
+          } finally {
+            inFlight = false;
+          }
+        })();
+      }
+      return inFlight;
+    };
+  };
+  cleanTrainedDataSynchronize = this.notConcurrent(async () => {
+    await this.cleanTrainedData();
+  });
 }

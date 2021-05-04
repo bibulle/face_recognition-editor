@@ -85,6 +85,7 @@ export class Progress {
   newFacesName: string;
   newFacesValidated: boolean;
   lastStartTime: Date;
+  status: string;
 
   constructor() {
     this.countImagesCurrent = 0;
